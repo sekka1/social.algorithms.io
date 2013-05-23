@@ -1,0 +1,155 @@
+<?php
+include('LinkedIn.php'); 
+
+// Change these
+define('API_KEY',      'pqstmpu12r5j'                                          );
+define('API_SECRET',   'uOiDkDHYPVVZgBd9'                                       );
+//define('REDIRECT_URI', 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME']);
+define('REDIRECT_URI', 'http://pod3.staging.www.algorithms.io/social/linkedintest');
+define('SCOPE',        'r_fullprofile r_emailaddress rw_nus r_network r_emailaddress r_contactinfo'  );
+ 
+
+
+
+//session_name('linkedin');
+//session_start();
+ 
+// OAuth 2 Control Flow
+if (isset($_GET['error'])) {
+    // LinkedIn returned an error
+    print $_GET['error'] . ': ' . $_GET['error_description'];
+    exit;
+} elseif (isset($_GET['code'])) {
+    // User authorized your application
+    if ($_SESSION['state'] == $_GET['state']) {
+        // Get token so you can make API calls
+        getAccessToken();
+    } else {
+        // CSRF attack? Or did you mix up your states?
+        exit;
+    }
+} else { 
+    if ((empty($_SESSION['expires_at'])) || (time() > $_SESSION['expires_at'])) {
+        // Token has expired, clear the state
+        $_SESSION = array();
+    }
+    if (empty($_SESSION['access_token'])) {
+        // Start authorization process
+        getAuthorizationCode();
+    }
+}
+
+// Setup LinkedIn Object
+$linkedin = new LinkedIn();
+$linkedin->setAccessToken($_SESSION['access_token']);
+
+ 
+$all_users = array(); 
+ 
+$n = 0;
+// Congratulations! You have a valid token. Now fetch your profile 
+//$user = fetch('GET', '/v1/people/~:(firstName,lastName,headline,location)');
+//$user = $linkedin->fetch('GET', '/v1/people/~/connections');
+//$user = $linkedin->fetch('GET', '/v1/people/id=tLPTKJZLMe:(firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)');
+//print "Hello $user->firstName $user->lastName.";
+//print_r($user);
+
+
+	// Get connection list of this user
+	$connections_list = $linkedin->fetch('GET', '/v1/people/~/connections');
+	
+	// Loop through the connection and get their info
+	foreach($connections_list->values as $aConnection){
+		// Get this connection's info
+	
+		$n++;
+		if($n>1000000)
+			break;
+		
+		$aUser = $linkedin->fetch('GET', '/v1/people/id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)');
+//print_r($aUser);
+//print_r($linkedin->getUsersValues($aUser));
+
+		$all_users[] = $linkedin->getUsersValues($aUser);
+	}
+
+echo "<br/><br/><br/><br/>results:<br/>";
+//print_r($all_users);
+outputArray($all_users);
+
+ session_unset();
+exit;
+ 
+function getAuthorizationCode() {
+    $params = array('response_type' => 'code',
+                    'client_id' => API_KEY,
+                    'scope' => SCOPE,
+                    'state' => uniqid('', true), // unique long string
+                    'redirect_uri' => REDIRECT_URI,
+              );
+ 
+    // Authentication request
+    $url = 'https://www.linkedin.com/uas/oauth2/authorization?' . http_build_query($params);
+     
+    // Needed to identify request when it returns to us
+    $_SESSION['state'] = $params['state'];
+ 
+    // Redirect user to authenticate
+    header("Location: $url");
+    exit;
+}
+     
+function getAccessToken() {
+    $params = array('grant_type' => 'authorization_code',
+                    'client_id' => API_KEY,
+                    'client_secret' => API_SECRET,
+                    'code' => $_GET['code'],
+                    'redirect_uri' => REDIRECT_URI,
+              );
+     
+    // Access Token request
+    $url = 'https://www.linkedin.com/uas/oauth2/accessToken?' . http_build_query($params);
+     
+    // Tell streams to make a POST request
+    $context = stream_context_create(
+                    array('http' => 
+                        array('method' => 'POST',
+                        )
+                    )
+                );
+ 
+    // Retrieve access token information
+    $response = file_get_contents($url, false, $context);
+
+    // Native PHP object, please
+    $token = json_decode($response);
+ 
+    // Store access token and expiration time
+    $_SESSION['access_token'] = $token->access_token; // guard this! 
+    $_SESSION['expires_in']   = $token->expires_in; // relative time (in seconds)
+    $_SESSION['expires_at']   = time() + $_SESSION['expires_in']; // absolute time
+     
+    return true;
+}
+function outputArray($output){
+	$outputHeader = true;
+
+	foreach($output as $anOutput){
+		if($outputHeader){
+			// Output Header
+			$headers = $anOutput;
+			foreach($headers as $key=>$val){
+				echo $key . ',';
+			}
+			echo '<br/>';
+			$outputHeader = false;
+		}
+		if(!$outputHeader){
+			// Ouput data
+			foreach($anOutput as $val){
+				echo preg_replace('/\,/','',$val) . ',';
+			}
+			echo '<br/>';
+		}
+	}
+}
