@@ -63,6 +63,11 @@ return
 				"enabled" => true,
 				"keys"    => array ( "id" => "", "secret" => "" ) 
 			),
+		
+			"Crunchbase" => array (
+				"enabled" => true,
+				"keys"    => array ( "api_key" => "gprbxgqh5kq3pm2nbrzyf7dd" ) 
+			),
 		),
 
 		// if you want to enable logging, set 'debug_mode' to true  then provide a writable file by the web server on "debug_file"
