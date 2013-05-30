@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Garland
+ * This class is used to retrieve values from a LinkedIn API user profile call.  
+ * It will check if the value is there and if it is, it will retrieve that value and return it
+ * in a normalized array.
+ * 
+ */
 namespace AlgorithmsIO{
 
 	class LinkedIn{
@@ -12,6 +18,9 @@ namespace AlgorithmsIO{
 		public function setAccessToken($access_token){
 			$this->access_token = $access_token;
 		}
+		/**
+		 * Shouldnt use this and should use Hybrid to fetch stuff instead
+		 */
 		public function fetch($method, $resource, $body = '') {
 		    $params = array('oauth2_access_token' => $this->access_token,
 		                    'format' => 'json',
@@ -33,6 +42,12 @@ namespace AlgorithmsIO{
 		    // Native PHP object, please
 		    return json_decode($response);
 		}
+		/**
+		 * Retrieves the list of values for a LinkedIn User Profile API call specified in the $this->keys array.
+		 * 
+		 * @param array $aUser
+		 * @return array
+		 */
 		public function getUsersValues($aUser){
 			$value = array();
 			foreach($this->keys as $aKey){

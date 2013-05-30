@@ -29,7 +29,15 @@ class Hybrid_Providers_Crunchbase extends Hybrid_Provider_Model
 	function loginBegin(){}
 	function loginFinish(){}
 	function logout(){}
-
+	
+	/**
+	 * Always returning true, there is no login for this API.
+	 * 
+	 * @return bool
+	 */
+	public function isUserConnected(){
+		return true;
+	}
 	function get($endpoint=null){
 
 		$data['crunchbase'] = file_get_contents($this->api_base_url . $endpoint."?api_key=".$this->api_key);
