@@ -6,11 +6,14 @@ $config = 'library/hybridauth/hybridauth/config.php';
 require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
 
 // Data Normalization
-include('library/DataNormalization/CrunchBase.php');
+include('library/AlgorithmsIO/DataNormalization/CrunchBase.php');
+// Graph DB
+include('library/AlgorithmsIO/GraphModels/CrunchBase.php');
 
 // Script Vars
-$all_users = array(); 
-$crunchbase = new \AlgorithmsIO\CrunchBase();
+//$all_users = array(); 
+$crunchbaseNormalize = new \AlgorithmsIO\DataNormalization\CrunchBase();
+$crunchbaseGraphModel = new \AlgorithmsIO\GraphModels\CrunchBase();
 
 session_start(); 
 
@@ -25,10 +28,13 @@ session_start();
 		
 		print_r($person);
 		
-		$all_users[] = $crunchbase->getUsersValues(json_decode($person['crunchbase']));
+		$aUser = $crunchbaseNormalize->getUsersValues(json_decode($person['crunchbase']));
 		
-		print_r($all_users);
-echo "done";		
+		print_r($aUser);
+		
+		// Save This into the graph database.
+		$graphModel = new \AlgorithmsIO\GraphModels\CrunchBase();
+		$graphModel->addUser($aUser);
 
 	}
 	catch( Exception $e ){  

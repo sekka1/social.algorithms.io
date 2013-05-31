@@ -6,14 +6,17 @@
  * in a normalized array.
  * 
  */
-namespace AlgorithmsIO{
+namespace AlgorithmsIO\DataNormalization{
 
 	class CrunchBase{
 		
 		private $access_token = null;
 		
 		// The list of keys names that we want to get out of the input
-		//private $keys = array('id','firstName','lastName');//,'headline','industry','location_country_code','location_name','numConnections','numConnectionsCapped','pictureUrl','positions_1_company_id','positions_1_company_industry','positions_1_company_name','positions_1_company_size','positions_1_company_type','positions_1_company_isCurrent','positions_1_company_startDate','positions_1_company_title','positions_2_company_id','positions_2_company_industry','positions_2_company_name','positions_2_company_size','positions_2_company_type','positions_2_company_isCurrent','positions_2_company_startDate','positions_2_company_title','positions_3_company_id','positions_3_company_industry','positions_3_company_name','positions_3_company_size','positions_3_company_type','positions_3_company_isCurrent','positions_3_company_startDate','positions_3_company_title','positions_4_company_id','positions_4_company_industry','positions_4_company_name','positions_4_company_size','positions_4_company_type','positions_4_company_isCurrent','positions_4_company_startDate','positions_4_company_title');//,'positions_4','publicProfileUrl','specialties');
+		//
+		// Each of these keys has a path somewhere in the json object that is passed in.  That value is checked if it is there or not
+		// before returning the value.
+		//
 		private $keys = array('id','firstName','lastName','crunchbase_url','homepage_url','birthplace','twitter_username','blog_url',
 		'blog_feed_url','affiliation_name','born_year','born_month','born_day','tag_list','alias_list','created_at','updated_at','overview','image_url',
 		'education_1_degree_type','education_1_subject','education_1_institution','education_1_graduated_year','education_1_graduated_month','education_1_graduated_day',
@@ -39,9 +42,11 @@ namespace AlgorithmsIO{
 		
 		public function __construct(){}
 		/**
-		 * Retrieves the list of values for a LinkedIn User Profile API call specified in the $this->keys array.
+		 * Retrieves the list of values for a Crunchbase User Profile API call specified in the $this->keys array.
 		 * 
-		 * @param array $aUser
+		 * Example REST Endpoint: person/david-rohrsheim.js
+		 * 
+		 * @param jsonObject $aUser
 		 * @return array
 		 */
 		public function getUsersValues($aUser){
