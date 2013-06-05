@@ -14,9 +14,25 @@ use Everyman\Neo4j\Client,
 	class GraphBase{
 		
 		protected $client;
+		protected $datasourceGUIDNode; // This is a node object of the main id node
 		
 		public function __construct(){
 			$this->client = new Client();
+		}
+		
+		
+		/**
+		 * Add a node, with properties.  Returns the id of the node created.
+		 * 
+		 * $properties - key=>value pair array of properties
+		 * return - client object resultSet()
+		 * 
+		 * @param array $properties
+		 * @return Client
+		 */
+		protected function addNode($properties){
+			$id = $this->client->makeNode()->setProperties($properties)->save();
+			return $id;
 		}
 		
 		/**
@@ -35,7 +51,34 @@ use Everyman\Neo4j\Client,
 			$query = new Cypher\Query($this->client, $queryTemplate);
 			return $query->getResultSet();
 		}
-		
+		/**
+		 * Creates a relationthip from start to To node with a type
+		 * 
+		 * @param Node $nodeStartObject
+		 * @param Node $nodeToObject
+		 * @param string $type
+		 * @return client object resultSet()
+		 */
+		protected function addRelationship($nodeStartObject, $nodeToObject, $type){
+			return $nodeStartObject->relateTo($nodeToObject, $type)->save();
+		}
+		/**
+		 * Add a timestamp parameter to this node
+		 * 
+		 * @param int $nodeId
+		 * @param string $timeStampName
+		 * @return Cypher\Query\resultSet()
+		 */
+		protected function addTimestamp($nodeId, $timeStampName){
+			$queryTemplate = 'START n=node('.$nodeId.')
+					  SET n.'.$timeStampName.' = timestamp()
+					  RETURN n;';
+			$query = new Cypher\Query($this->client, $queryTemplate);
+			return $query->getResultSet();
+		}
+		protected function createUniqueNode(){
+			
+		}
 	}		
 }
 	

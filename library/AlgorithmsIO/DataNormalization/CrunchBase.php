@@ -12,33 +12,23 @@ namespace AlgorithmsIO\DataNormalization{
 		
 		private $access_token = null;
 		
+		// Arrays holding label specific data
+		private $person;
+		private $employment = array();
+		private $education = array();
+		
 		// The list of keys names that we want to get out of the input
 		//
 		// Each of these keys has a path somewhere in the json object that is passed in.  That value is checked if it is there or not
 		// before returning the value.
 		//
-		private $keys = array('id','firstName','lastName','crunchbase_url','homepage_url','birthplace','twitter_username','blog_url',
-		'blog_feed_url','affiliation_name','born_year','born_month','born_day','tag_list','alias_list','created_at','updated_at','overview','image_url',
-		'education_1_degree_type','education_1_subject','education_1_institution','education_1_graduated_year','education_1_graduated_month','education_1_graduated_day',
-		'education_2_degree_type','education_2_subject','education_2_institution','education_2_graduated_year','education_2_graduated_month','education_2_graduated_day',
-		'education_3_degree_type','education_3_subject','education_3_institution','education_3_graduated_year','education_3_graduated_month','education_3_graduated_day',
-		'education_4_degree_type','education_4_subject','education_4_institution','education_4_graduated_year','education_4_graduated_month','education_4_graduated_day',
-		'education_5_degree_type','education_5_subject','education_5_institution','education_5_graduated_year','education_5_graduated_month','education_5_graduated_day',
-		'education_6_degree_type','education_6_subject','education_6_institution','education_6_graduated_year','education_6_graduated_month','education_6_graduated_day',
-		'employment_1_is_past', 'employment_1_title', 'employment_1_firm_name', 'employment_1_firm_permalink', 'employment_1_firm_type_of_entity',
-		'employment_2_is_past', 'employment_2_title', 'employment_2_firm_name', 'employment_2_firm_permalink', 'employment_2_firm_type_of_entity',
-		'employment_3_is_past', 'employment_3_title', 'employment_3_firm_name', 'employment_3_firm_permalink', 'employment_3_firm_type_of_entity',
-		'employment_4_is_past', 'employment_4_title', 'employment_4_firm_name', 'employment_4_firm_permalink', 'employment_4_firm_type_of_entity',
-		'employment_5_is_past', 'employment_5_title', 'employment_5_firm_name', 'employment_5_firm_permalink', 'employment_5_firm_type_of_entity',
-		'employment_6_is_past', 'employment_6_title', 'employment_6_firm_name', 'employment_6_firm_permalink', 'employment_6_firm_type_of_entity',
-		'employment_7_is_past', 'employment_7_title', 'employment_7_firm_name', 'employment_7_firm_permalink', 'employment_7_firm_type_of_entity',
-		'employment_8_is_past', 'employment_8_title', 'employment_8_firm_name', 'employment_8_firm_permalink', 'employment_8_firm_type_of_entity',
-		'employment_9_is_past', 'employment_9_title', 'employment_9_firm_name', 'employment_9_firm_permalink', 'employment_9_firm_type_of_entity',
-		'employment_10_is_past', 'employment_10_title', 'employment_10_firm_name', 'employment_10_firm_permalink', 'employment_10_firm_type_of_entity',
-		'employment_11_is_past', 'employment_11_title', 'employment_11_firm_name', 'employment_11_firm_permalink', 'employment_11_firm_type_of_entity',
-		'employment_12_is_past', 'employment_12_title', 'employment_12_firm_name', 'employment_12_firm_permalink', 'employment_12_firm_type_of_entity'
-		
-		);
+		private $keys = array('source_uid',
+							'person',
+							'other_handles',
+							'data_meta_data', // Data about this data, created, update, etc
+							'educations',
+							'employments'
+						);
 		
 		public function __construct(){}
 		/**
@@ -58,14 +48,37 @@ namespace AlgorithmsIO\DataNormalization{
 			return $value;
 		}
 		/**
-		 * Getting Values out of a users profile
+		 * Getting the UID for this user in this datasource feed
 		 * 
 		 */
-		private function value_id($aUser){
+		private function value_source_uid($aUser){
 			if(isset($aUser->permalink))
 				return $aUser->permalink;
 			else
 				return null;
+		}
+		
+		/**
+		 * Retrieves information about this person
+		 * 
+		 */
+		private function value_person($aUser){
+			$dataArray = array();
+			$dataArray['firstName'] = $this->value_firstName($aUser);
+			$dataArray['lastName'] = $this->value_lastName($aUser);
+			$dataArray['homepage_url'] = $this->value_homepage_url($aUser);
+			$dataArray['birthplace'] = $this->value_birthplace($aUser);
+			$dataArray['blog_url'] = $this->value_blog_url($aUser);
+			$dataArray['blog_feed_url'] = $this->value_blog_feed_url($aUser);
+			$dataArray['affiliation_name'] = $this->value_affiliation_name($aUser);
+			$dataArray['born_year'] = $this->value_born_year($aUser);
+			$dataArray['born_month'] = $this->value_born_month($aUser);
+			$dataArray['born_day'] = $this->value_born_day($aUser);
+			$dataArray['tag_list'] = $this->value_tag_list($aUser);
+			$dataArray['alias_list'] = $this->value_alias_list($aUser);
+			$dataArray['image_url'] = $this->value_image_url($aUser);
+			
+			return $dataArray;
 		}
 		private function value_firstName($aUser){
 			if(isset($aUser->first_name))
@@ -94,12 +107,6 @@ namespace AlgorithmsIO\DataNormalization{
 		private function value_birthplace($aUser){
 			if(isset($aUser->birthplace))
 				return $aUser->birthplace;
-			else
-				return null;
-		}	
-		private function value_twitter_username($aUser){
-			if(isset($aUser->twitter_username))
-				return $aUser->twitter_username;
 			else
 				return null;
 		}
@@ -151,18 +158,7 @@ namespace AlgorithmsIO\DataNormalization{
 			else
 				return null;
 		}		
-		private function value_created_at($aUser){
-			if(isset($aUser->created_at))
-				return $aUser->created_at;
-			else
-				return null;
-		}
-		private function value_updated_at($aUser){
-			if(isset($aUser->updated_at))
-				return $aUser->updated_at;
-			else
-				return null;
-		}		
+	
 		private function value_overview($aUser){
 			if(isset($aUser->overview))
 				return $aUser->overview;
@@ -176,850 +172,161 @@ namespace AlgorithmsIO\DataNormalization{
 					
 				}
 			}
-		}	
-		private function value_education_1_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->degree_type)){
-					return $aUser->degrees[0]->degree_type;
-				}
-			}
-		}			
-		private function value_education_1_subject($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->degree_subject)){
-					return $aUser->degrees[0]->degree_subject;
-				}
-			}
-		}	
-		private function value_education_1_institution($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->institution)){
-					return $aUser->degrees[0]->institution;
-				}
-			}
-		}	
-		private function value_education_1_graduated_year($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->graduated_year)){
-					return $aUser->degrees[0]->graduated_year;
-				}
-			}
-		}			
-		private function value_education_1_graduated_month($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->graduated_month)){
-					return $aUser->degrees[0]->graduated_month;
-				}
-			}
-		}	
-		private function value_education_1_graduated_day($aUser){
-			$value = null;
-			if(isset($aUser->degrees[0])){
-				if(isset($aUser->degrees[0]->graduated_day)){
-					return $aUser->degrees[0]->graduated_day;
-				}
-			}
-		}		
-		private function value_education_2_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->degree_type)){
-					return $aUser->degrees[1]->degree_type;
-				}
-			}
-		}			
-		private function value_education_2_subject($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->degree_subject)){
-					return $aUser->degrees[1]->degree_subject;
-				}
-			}
-		}	
-		private function value_education_2_institution($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->institution)){
-					return $aUser->degrees[1]->institution;
-				}
-			}
-		}	
-		private function value_education_2_graduated_year($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->graduated_year)){
-					return $aUser->degrees[1]->graduated_year;
-				}
-			}
-		}			
-		private function value_education_2_graduated_month($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->graduated_month)){
-					return $aUser->degrees[1]->graduated_month;
-				}
-			}
-		}	
-		private function value_education_2_graduated_day($aUser){
-			$value = null;
-			if(isset($aUser->degrees[1])){
-				if(isset($aUser->degrees[1]->graduated_day)){
-					return $aUser->degrees[1]->graduated_day;
-				}
-			}
-		}	
-		private function value_education_3_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->degree_type)){
-					return $aUser->degrees[2]->degree_type;
-				}
-			}
-		}			
-		private function value_education_3_subject($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->degree_subject)){
-					return $aUser->degrees[2]->degree_subject;
-				}
-			}
-		}	
-		private function value_education_3_institution($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->institution)){
-					return $aUser->degrees[2]->institution;
-				}
-			}
-		}	
-		private function value_education_3_graduated_year($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->graduated_year)){
-					return $aUser->degrees[2]->graduated_year;
-				}
-			}
-		}			
-		private function value_education_3_graduated_month($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->graduated_month)){
-					return $aUser->degrees[2]->graduated_month;
-				}
-			}
-		}	
-		private function value_education_3_graduated_day($aUser){
-			$value = null;
-			if(isset($aUser->degrees[2])){
-				if(isset($aUser->degrees[2]->graduated_day)){
-					return $aUser->degrees[2]->graduated_day;
-				}
-			}
-		}		
-		private function value_education_4_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->degree_type)){
-					return $aUser->degrees[3]->degree_type;
-				}
-			}
-		}			
-		private function value_education_4_subject($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->degree_subject)){
-					return $aUser->degrees[3]->degree_subject;
-				}
-			}
-		}	
-		private function value_education_4_institution($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->institution)){
-					return $aUser->degrees[3]->institution;
-				}
-			}
-		}	
-		private function value_education_4_graduated_year($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->graduated_year)){
-					return $aUser->degrees[3]->graduated_year;
-				}
-			}
-		}			
-		private function value_education_4_graduated_month($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->graduated_month)){
-					return $aUser->degrees[3]->graduated_month;
-				}
-			}
-		}	
-		private function value_education_4_graduated_day($aUser){
-			$value = null;
-			if(isset($aUser->degrees[3])){
-				if(isset($aUser->degrees[3]->graduated_day)){
-					return $aUser->degrees[3]->graduated_day;
-				}
-			}
 		}
-		private function value_education_5_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->degree_type)){
-					return $aUser->degrees[4]->degree_type;
-				}
-			}
-		}			
-		private function value_education_5_subject($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->degree_subject)){
-					return $aUser->degrees[4]->degree_subject;
-				}
-			}
-		}	
-		private function value_education_5_institution($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->institution)){
-					return $aUser->degrees[4]->institution;
-				}
-			}
-		}	
-		private function value_education_5_graduated_year($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->graduated_year)){
-					return $aUser->degrees[4]->graduated_year;
-				}
-			}
-		}			
-		private function value_education_5_graduated_month($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->graduated_month)){
-					return $aUser->degrees[4]->graduated_month;
-				}
-			}
-		}	
-		private function value_education_5_graduated_day($aUser){
-			$value = null;
-			if(isset($aUser->degrees[4])){
-				if(isset($aUser->degrees[4]->graduated_day)){
-					return $aUser->degrees[4]->graduated_day;
-				}
-			}
+		/**
+		 * Retrieves other user handles for this person from other networks
+		 */
+		private function value_other_handles($aUser){
+			$dataArray = array();
+			$dataArray['twitter_username'] = $this->value_twitter_username($aUser);
+			return $dataArray;
 		}
-		private function value_education_6_degree_type($aUser){
-			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->degree_type)){
-					return $aUser->degrees[5]->degree_type;
+		private function value_twitter_username($aUser){
+			if(isset($aUser->twitter_username))
+				return $aUser->twitter_username;
+			else
+				return null;
+		}
+		/**
+		 * Retrives meta data about this data
+		 */
+		private function value_data_meta_data($aUser){
+			$dataArray = array();
+			$dataArray['created_at'] = $this->value_created_at($aUser);
+			$dataArray['updated_at'] = $this->value_updated_at($aUser);
+			$dataArray['crunchbase_url'] = $this->value_crunchbase_url($aUser);
+			return $dataArray;
+		}
+		 private function value_created_at($aUser){
+			if(isset($aUser->created_at))
+				return $aUser->created_at;
+			else
+				return null;
+		}
+		private function value_updated_at($aUser){
+			if(isset($aUser->updated_at))
+				return $aUser->updated_at;
+			else
+				return null;
+		}	
+		/**
+		 * Retrieves all the education and returns an array of it
+		 */
+		private function value_educations($aUser){
+			$dataArray = array();
+			if(isset($aUser->degrees)){
+				foreach($aUser->degrees as $anItem){
+					$data['type'] = $this->value_education_degree_type($anItem);
+					$data['subject'] = $this->value_education_subject($anItem);
+					$data['institution'] = $this->value_education_institution($anItem);
+					$data['graduated_year'] = $this->value_education_graduated_year($anItem);
+					$data['graduated_month'] = $this->value_education_graduated_month($anItem);
+					$data['graduated_day'] = $this->value_education_graduated_day($anItem);
+					array_push($dataArray,$data);
 				}
+			}
+			return $dataArray;
+		}
+		private function value_education_degree_type($anItem){
+			$value = null;
+			if(isset($anItem->degree_type)){
+				return $anItem->degree_type;
 			}
 		}			
-		private function value_education_6_subject($aUser){
+		private function value_education_subject($anItem){
 			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->degree_subject)){
-					return $aUser->degrees[5]->degree_subject;
+				if(isset($anItem->degree_subject)){
+					return $anItem->degree_subject;
 				}
-			}
 		}	
-		private function value_education_6_institution($aUser){
+		private function value_education_institution($anItem){
 			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->institution)){
-					return $aUser->degrees[5]->institution;
+				if(isset($anItem->institution)){
+					return $anItem->institution;
 				}
-			}
 		}	
-		private function value_education_6_graduated_year($aUser){
+		private function value_education_graduated_year($anItem){
 			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->graduated_year)){
-					return $aUser->degrees[5]->graduated_year;
+				if(isset($anItem->graduated_year)){
+					return $anItem->graduated_year;
 				}
-			}
 		}			
-		private function value_education_6_graduated_month($aUser){
+		private function value_education_graduated_month($anItem){
 			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->graduated_month)){
-					return $aUser->degrees[5]->graduated_month;
+				if(isset($anItem->graduated_month)){
+					return $anItem->graduated_month;
 				}
-			}
 		}	
-		private function value_education_6_graduated_day($aUser){
+		private function value_education_graduated_day($anItem){
 			$value = null;
-			if(isset($aUser->degrees[5])){
-				if(isset($aUser->degrees[5]->graduated_day)){
-					return $aUser->degrees[5]->graduated_day;
+				if(isset($anItem->graduated_day)){
+					return $anItem->graduated_day;
 				}
-			}
-		}			
+		}		
+		
+		
+			
 		
 	
+		/**
+		 * Retrieves all the employments and returns an array of it
+		 */
+		private function value_employments($aUser){
+			$dataArray = array();
+			if(isset($aUser->relationships)){
+				foreach($aUser->relationships as $anItem){
+					$data['is_past'] = $this->value_employment_is_past($anItem);
+					$data['title'] = $this->value_employment_title($anItem);
+					$data['firm_name'] = $this->value_employment_firm_name($anItem);
+					$data['firm_permalink'] = $this->value_employment_firm_permalink($anItem);
+					$data['firm_type_of_entity'] = $this->value_employment_firm_type_of_entity($anItem);
+					array_push($dataArray,$data);
+				}
+			}
+			return $dataArray;
+		}
+				
+		private function value_employment_is_past($anItem){
+			$value = null;
+				if(isset($anItem->is_past)){
+					return $anItem->is_past ? 'true' : 'false';
+				}
+		}
+		private function value_employment_title($anItem){
+			$value = null;
+				if(isset($anItem->title)){
+					return $anItem->title;
+				}
+		}		
+		private function value_employment_firm_name($anItem){
+			$value = null;
+				if(isset($anItem->firm)){
+					if(isset($anItem->firm->name)){
+						return $anItem->firm->name;
+					}
+				}
+		}		
+		private function value_employment_firm_permalink($anItem){
+			$value = null;
+				if(isset($anItem->firm)){
+					if(isset($anItem->firm->permalink)){
+						return $anItem->firm->permalink;
+					}
+				}
+		}	
+		private function value_employment_firm_type_of_entity($anItem){
+			$value = null;
+				if(isset($anItem->firm)){
+					if(isset($anItem->firm->type_of_entity)){
+						return $anItem->firm->type_of_entity;
+					}
+				}
+		}	
 		
-		private function value_employment_1_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[0])){
-				if(isset($aUser->relationships[0]->is_past)){
-					return $aUser->relationships[0]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_1_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[0])){
-				if(isset($aUser->relationships[0]->title)){
-					return $aUser->relationships[0]->title;
-				}
-			}
-		}		
-		private function value_employment_1_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[0])){
-				if(isset($aUser->relationships[0]->firm)){
-					if(isset($aUser->relationships[0]->firm->name)){
-						return $aUser->relationships[0]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_1_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[0])){
-				if(isset($aUser->relationships[0]->firm)){
-					if(isset($aUser->relationships[0]->firm->permalink)){
-						return $aUser->relationships[0]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_1_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[0])){
-				if(isset($aUser->relationships[0]->firm)){
-					if(isset($aUser->relationships[0]->firm->type_of_entity)){
-						return $aUser->relationships[0]->firm->type_of_entity;
-					}
-				}
-			}
-		}	
-		private function value_employment_2_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[1])){
-				if(isset($aUser->relationships[1]->is_past)){
-					return ($aUser->relationships[1]->is_past) ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_2_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[1])){
-				if(isset($aUser->relationships[1]->title)){
-					return $aUser->relationships[1]->title;
-				}
-			}
-		}		
-		private function value_employment_2_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[1])){
-				if(isset($aUser->relationships[1]->firm)){
-					if(isset($aUser->relationships[1]->firm->name)){
-						return $aUser->relationships[1]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_2_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[1])){
-				if(isset($aUser->relationships[1]->firm)){
-					if(isset($aUser->relationships[1]->firm->permalink)){
-						return $aUser->relationships[1]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_2_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[1])){
-				if(isset($aUser->relationships[1]->firm)){
-					if(isset($aUser->relationships[1]->firm->type_of_entity)){
-						return $aUser->relationships[1]->firm->type_of_entity;
-					}
-				}
-			}
-		}	
-		private function value_employment_3_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[2])){
-				if(isset($aUser->relationships[2]->is_past)){
-					return $aUser->relationships[2]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_3_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[2])){
-				if(isset($aUser->relationships[2]->title)){
-					return $aUser->relationships[2]->title;
-				}
-			}
-		}		
-		private function value_employment_3_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[2])){
-				if(isset($aUser->relationships[2]->firm)){
-					if(isset($aUser->relationships[2]->firm->name)){
-						return $aUser->relationships[2]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_3_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[2])){
-				if(isset($aUser->relationships[2]->firm)){
-					if(isset($aUser->relationships[2]->firm->permalink)){
-						return $aUser->relationships[2]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_3_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[2])){
-				if(isset($aUser->relationships[2]->firm)){
-					if(isset($aUser->relationships[2]->firm->type_of_entity)){
-						return $aUser->relationships[2]->firm->type_of_entity;
-					}
-				}
-			}
-		}	
-		private function value_employment_4_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[3])){
-				if(isset($aUser->relationships[3]->is_past)){
-					return $aUser->relationships[3]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_4_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[3])){
-				if(isset($aUser->relationships[3]->title)){
-					return $aUser->relationships[3]->title;
-				}
-			}
-		}		
-		private function value_employment_4_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[3])){
-				if(isset($aUser->relationships[3]->firm)){
-					if(isset($aUser->relationships[3]->firm->name)){
-						return $aUser->relationships[3]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_4_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[3])){
-				if(isset($aUser->relationships[3]->firm)){
-					if(isset($aUser->relationships[3]->firm->permalink)){
-						return $aUser->relationships[3]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_4_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[3])){
-				if(isset($aUser->relationships[3]->firm)){
-					if(isset($aUser->relationships[3]->firm->type_of_entity)){
-						return $aUser->relationships[3]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_5_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[4])){
-				if(isset($aUser->relationships[4]->is_past)){
-					return $aUser->relationships[4]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_5_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[4])){
-				if(isset($aUser->relationships[4]->title)){
-					return $aUser->relationships[4]->title;
-				}
-			}
-		}		
-		private function value_employment_5_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[4])){
-				if(isset($aUser->relationships[4]->firm)){
-					if(isset($aUser->relationships[4]->firm->name)){
-						return $aUser->relationships[4]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_5_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[4])){
-				if(isset($aUser->relationships[4]->firm)){
-					if(isset($aUser->relationships[4]->firm->permalink)){
-						return $aUser->relationships[4]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_5_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[4])){
-				if(isset($aUser->relationships[4]->firm)){
-					if(isset($aUser->relationships[4]->firm->type_of_entity)){
-						return $aUser->relationships[4]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_6_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[5])){
-				if(isset($aUser->relationships[5]->is_past)){
-					return $aUser->relationships[5]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_6_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[5])){
-				if(isset($aUser->relationships[5]->title)){
-					return $aUser->relationships[5]->title;
-				}
-			}
-		}		
-		private function value_employment_6_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[5])){
-				if(isset($aUser->relationships[5]->firm)){
-					if(isset($aUser->relationships[5]->firm->name)){
-						return $aUser->relationships[5]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_6_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[5])){
-				if(isset($aUser->relationships[5]->firm)){
-					if(isset($aUser->relationships[5]->firm->permalink)){
-						return $aUser->relationships[5]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_6_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[5])){
-				if(isset($aUser->relationships[5]->firm)){
-					if(isset($aUser->relationships[5]->firm->type_of_entity)){
-						return $aUser->relationships[5]->firm->type_of_entity;
-					}
-				}
-			}
-		}	
-		private function value_employment_7_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[6])){
-				if(isset($aUser->relationships[6]->is_past)){
-					return $aUser->relationships[6]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_7_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[6])){
-				if(isset($aUser->relationships[6]->title)){
-					return $aUser->relationships[6]->title;
-				}
-			}
-		}		
-		private function value_employment_7_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[6])){
-				if(isset($aUser->relationships[6]->firm)){
-					if(isset($aUser->relationships[6]->firm->name)){
-						return $aUser->relationships[6]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_7_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[6])){
-				if(isset($aUser->relationships[6]->firm)){
-					if(isset($aUser->relationships[6]->firm->permalink)){
-						return $aUser->relationships[6]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_7_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[6])){
-				if(isset($aUser->relationships[6]->firm)){
-					if(isset($aUser->relationships[6]->firm->type_of_entity)){
-						return $aUser->relationships[6]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_8_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[7])){
-				if(isset($aUser->relationships[7]->is_past)){
-					return $aUser->relationships[7]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_8_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[7])){
-				if(isset($aUser->relationships[7]->title)){
-					return $aUser->relationships[7]->title;
-				}
-			}
-		}		
-		private function value_employment_8_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[7])){
-				if(isset($aUser->relationships[7]->firm)){
-					if(isset($aUser->relationships[7]->firm->name)){
-						return $aUser->relationships[7]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_8_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[7])){
-				if(isset($aUser->relationships[7]->firm)){
-					if(isset($aUser->relationships[7]->firm->permalink)){
-						return $aUser->relationships[7]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_8_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[7])){
-				if(isset($aUser->relationships[7]->firm)){
-					if(isset($aUser->relationships[7]->firm->type_of_entity)){
-						return $aUser->relationships[7]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_9_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[8])){
-				if(isset($aUser->relationships[8]->is_past)){
-					return $aUser->relationships[8]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_9_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[8])){
-				if(isset($aUser->relationships[8]->title)){
-					return $aUser->relationships[8]->title;
-				}
-			}
-		}		
-		private function value_employment_9_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[8])){
-				if(isset($aUser->relationships[8]->firm)){
-					if(isset($aUser->relationships[8]->firm->name)){
-						return $aUser->relationships[8]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_9_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[8])){
-				if(isset($aUser->relationships[8]->firm)){
-					if(isset($aUser->relationships[8]->firm->permalink)){
-						return $aUser->relationships[8]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_9_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[8])){
-				if(isset($aUser->relationships[8]->firm)){
-					if(isset($aUser->relationships[8]->firm->type_of_entity)){
-						return $aUser->relationships[8]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_10_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[9])){
-				if(isset($aUser->relationships[9]->is_past)){
-					return $aUser->relationships[9]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_10_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[9])){
-				if(isset($aUser->relationships[9]->title)){
-					return $aUser->relationships[9]->title;
-				}
-			}
-		}		
-		private function value_employment_10_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[9])){
-				if(isset($aUser->relationships[9]->firm)){
-					if(isset($aUser->relationships[9]->firm->name)){
-						return $aUser->relationships[9]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_10_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[9])){
-				if(isset($aUser->relationships[9]->firm)){
-					if(isset($aUser->relationships[9]->firm->permalink)){
-						return $aUser->relationships[9]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_10_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[9])){
-				if(isset($aUser->relationships[9]->firm)){
-					if(isset($aUser->relationships[9]->firm->type_of_entity)){
-						return $aUser->relationships[9]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_11_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[10])){
-				if(isset($aUser->relationships[10]->is_past)){
-					return $aUser->relationships[10]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_11_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[10])){
-				if(isset($aUser->relationships[10]->title)){
-					return $aUser->relationships[10]->title;
-				}
-			}
-		}		
-		private function value_employment_11_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[10])){
-				if(isset($aUser->relationships[10]->firm)){
-					if(isset($aUser->relationships[10]->firm->name)){
-						return $aUser->relationships[10]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_11_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[10])){
-				if(isset($aUser->relationships[10]->firm)){
-					if(isset($aUser->relationships[10]->firm->permalink)){
-						return $aUser->relationships[10]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_11_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[10])){
-				if(isset($aUser->relationships[10]->firm)){
-					if(isset($aUser->relationships[10]->firm->type_of_entity)){
-						return $aUser->relationships[10]->firm->type_of_entity;
-					}
-				}
-			}
-		}
-		private function value_employment_12_is_past($aUser){
-			$value = null;
-			if(isset($aUser->relationships[11])){
-				if(isset($aUser->relationships[11]->is_past)){
-					return $aUser->relationships[11]->is_past ? 'true' : 'false';
-				}
-			}
-		}
-		private function value_employment_12_title($aUser){
-			$value = null;
-			if(isset($aUser->relationships[11])){
-				if(isset($aUser->relationships[11]->title)){
-					return $aUser->relationships[11]->title;
-				}
-			}
-		}		
-		private function value_employment_12_firm_name($aUser){
-			$value = null;
-			if(isset($aUser->relationships[11])){
-				if(isset($aUser->relationships[11]->firm)){
-					if(isset($aUser->relationships[11]->firm->name)){
-						return $aUser->relationships[11]->firm->name;
-					}
-				}
-			}
-		}		
-		private function value_employment_12_firm_permalink($aUser){
-			$value = null;
-			if(isset($aUser->relationships[11])){
-				if(isset($aUser->relationships[11]->firm)){
-					if(isset($aUser->relationships[11]->firm->permalink)){
-						return $aUser->relationships[11]->firm->permalink;
-					}
-				}
-			}
-		}	
-		private function value_employment_12_firm_type_of_entity($aUser){
-			$value = null;
-			if(isset($aUser->relationships[11])){
-				if(isset($aUser->relationships[11]->firm)){
-					if(isset($aUser->relationships[11]->firm->type_of_entity)){
-						return $aUser->relationships[11]->firm->type_of_entity;
-					}
-				}
-			}
-		}			
+		
+		
+		
+		
 
 
 	
