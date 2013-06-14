@@ -5,6 +5,7 @@ ini_set('error_reporting', E_ALL);
 $config = 'library/hybridauth/hybridauth/config.php';
 require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
 
+
 // Data Normalization
 include('library/AlgorithmsIO/DataNormalization/CrunchBase.php');
 // Graph DB
@@ -18,13 +19,15 @@ $crunchbaseGraphModel = new \AlgorithmsIO\GraphModels\CrunchBase();
 session_start(); 
 
 	try{
+            
 		// hybridauth EP
 		$hybridauth = new Hybrid_Auth( $config );
 
 		// automatically try to login with the given provider
 		$provider = $hybridauth->getAdapter( "Crunchbase" );
 		
-		$person = $provider->get('person/david-rohrsheim.js');
+		//$person = $provider->get('person/david-rohrsheim.js');
+                $person = $provider->get('person/amanda-north.js');
 		
 		print_r($person);
 		
@@ -34,8 +37,14 @@ session_start();
 		
 		// Save This into the graph database.
 		$graphModel = new \AlgorithmsIO\GraphModels\CrunchBase();
-		$graphModel->addUser($aUser);
-
+                $graphModel->setUser($aUser);
+                
+                // Doing the loop just for testing and putting in more nodes
+                for($i=0;$i<1;$i++){
+                    echo $i . ' - ';
+                    $graphModel->processUser();
+                    echo "<br/>";
+                }
 	}
 	catch( Exception $e ){  
 		// In case we have errors 6 or 7, then we have to use Hybrid_Provider_Adapter::logout() to 
