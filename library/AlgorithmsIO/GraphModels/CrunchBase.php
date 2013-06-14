@@ -1,7 +1,7 @@
 <?php
 /**
  * Garland
- * Addes Crunchbase data into the the graph database
+ * Add Crunchbase data into the the graph database
  * 
  * addUser() - Addes a "user" from a CrunchBase Normalized data set into the graph database
  * 			   as one user with his various connections like jobs, education, etc
@@ -33,6 +33,13 @@ use Everyman\Neo4j\Client,
                 public function setUser($aUser){
                     $this->user = $aUser;
                 }
+                /**
+                 * Gets the current main user node id
+                 * @return int
+                 */
+                public function getMainUserIdNode(){
+                    return $this->datasourceGUIDNode->getId();
+                }
 		/**
                  * Processes a users information.  THis user might already be in the graph db
                  * or not.  Will have to check to add or update this user's information.
@@ -51,28 +58,21 @@ use Everyman\Neo4j\Client,
 		 * @return boolean
 		 */
 		private function setCurrentUser(){	
-			$didAdd = false;
+                    $userIsSet = false;
 
-                        // MERGE on this node - which will create it if it doesnt exist or return the node
-                        $queryTemplate = "MERGE (userGUIDNode:Person{source_uid:'".$this->user['source_uid']."', datasource_name:'".$this->dataSourceName."'})
+                    // MERGE on this node - which will create it if it doesnt exist or return the node
+                    $queryTemplate = "MERGE (userGUIDNode:Person{source_uid:'".$this->user['source_uid']."', datasource_name:'".$this->dataSourceName."'})
                                         SET userGUIDNode.created = timestamp()
                                         RETURN userGUIDNode;";
-			$query = new Cypher\Query($this->client, $queryTemplate);
-                   $r = $query->getResultSet();
-                   
-                   // 
-
-                   
-                   echo "<br/><br/>";
-                   echo "merge guid count: ".$r->count()."<br/>";
+                    $query = new Cypher\Query($this->client, $queryTemplate);
+                    $r = $query->getResultSet();
                    
                    foreach ($r as $row) {
-                        //print_r($row);
                         $this->datasourceGUIDNode = $row['userGUIDNode'];
-                        echo $this->datasourceGUIDNode->getId()."<br/>";
+                        $userIsSet = true;
                     }
                    
-                    return $didAdd;
+                    return $userIsSet;
 		}
                /**
                 * Adds an entire person in and updates it if the information changes
@@ -112,9 +112,6 @@ use Everyman\Neo4j\Client,
 
                                         RETURN 
                                         nodePersonNames";
-                   
-                   //".$this->buildEmploymentPath()."
-                   // ".$this->buildEducationPath()."
 
                    $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId(),
                                         'nodeDataSourceNameNode_value'=>$this->dataSourceName,

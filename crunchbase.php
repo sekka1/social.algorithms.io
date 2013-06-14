@@ -41,8 +41,9 @@ session_start();
                 
                 // Doing the loop just for testing and putting in more nodes
                 for($i=0;$i<1;$i++){
-                    echo $i . ' - ';
+                    echo $i . ' - <br/>';
                     $graphModel->processUser();
+                    echo "Added User with node: " . $graphModel->getMainUserIdNode()."<br/>";
                     echo "<br/>";
                 }
 	}
