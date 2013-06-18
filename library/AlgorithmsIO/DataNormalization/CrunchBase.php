@@ -16,6 +16,7 @@ namespace AlgorithmsIO\DataNormalization{
 		private $person;
 		private $employment = array();
 		private $education = array();
+                private $allValues = array();
 		
 		// The list of keys names that we want to get out of the input
 		//
@@ -40,12 +41,14 @@ namespace AlgorithmsIO\DataNormalization{
 		 * @return array
 		 */
 		public function getUsersValues($aUser){
-			$value = array();
+			$this->allValues = array();
 			foreach($this->keys as $aKey){
 				$function = 'value_'.$aKey;
-				$value[$aKey] = $this->$function($aUser);
+				$this->allValues[$aKey] = $this->$function($aUser);
 			}
-			return $value;
+                        $this->pruneValues();
+                        
+			return $this->allValues;
 		}
 		/**
 		 * Getting the UID for this user in this datasource feed
@@ -324,9 +327,61 @@ namespace AlgorithmsIO\DataNormalization{
 		}	
 		
 		
-		
-		
-		
+		/**
+                 * Will go through each of the arrays holding values and prune it
+                 * 
+                 * -lower case the value
+                 * -remove '
+                 * -remove "
+                 */
+		private function pruneValues(){
+                   
+                    $this->lowercase();
+                    $this->removeQuotes();
+                }
+		private function lowercase(){
+                    // Person
+                    foreach($this->allValues['person'] as $key=>$val){
+                        $this->allValues['person'][$key] = strtolower($val);
+                    }
+                    // Education
+                    for($i=0;$i<count($this->allValues['educations']);$i++){
+                        foreach($this->allValues['educations'][$i] as $key=>$val){
+                            $this->allValues['educations'][$i][$key] = strtolower($val);
+                        }
+                    }
+                    // Employment
+                    for($i=0;$i<count($this->allValues['employments']);$i++){
+                        foreach($this->allValues['employments'][$i] as $key=>$val){
+                            $this->allValues['employments'][$i][$key] = strtolower($val);
+                        }
+                    }
+                }
+                private function removeQuotes(){
+                    // Person
+                    foreach($this->allValues['person'] as $key=>$val){
+                        $this->allValues['person'][$key] = str_replace("'","",$val);
+                        $this->allValues['person'][$key] = str_replace('"','', $val);
+                    }
+                    // Education
+                    for($i=0;$i<count($this->allValues['educations']);$i++){
+                        foreach($this->allValues['educations'][$i] as $key=>$val){
+                            //$this->allValues['educations'][$i][$key] = str_replace("'","",$val);
+                            //$this->allValues['educations'][$i][$key] = str_replace('"','', $val);
+                            $this->allValues['educations'][$i][$key] = mysql_real_escape_string($val);
+                        }
+                    }
+                    // Employment
+                    for($i=0;$i<count($this->allValues['employments']);$i++){
+                        foreach($this->allValues['employments'][$i] as $key=>$val){
+                            //$this->allValues['employments'][$i][$key] = str_replace("'","",$val);
+                            //$this->allValues['employments'][$i][$key] = str_replace('"',"",$val);
+                            //$this->allValues['employments'][$i][$key] = urlencode($val);
+                            $this->allValues['employments'][$i][$key] = mysql_real_escape_string($val);
+                        }
+                    }
+                    
+                }
 
 
 	

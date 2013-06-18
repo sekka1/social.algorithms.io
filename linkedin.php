@@ -6,7 +6,7 @@ $config = 'library/hybridauth/hybridauth/config.php';
 require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
 
 // Data Normalization
-include('library/DataNormalization/LinkedIn.php');
+include('library/AlgorithmsIO/DataNormalization/LinkedIn.php');
 
 // Script Vars
 $all_users = array(); 
@@ -47,21 +47,26 @@ session_start();
 		foreach($connections_list_object->values as $aConnection){
 		
 			$n++;
-			if($n>100)
-				break;
+			//if($n>4)
+			//	break;
 
-			$aUser = $provider->api()->profile( 'id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
-//print_r($aUser);
+			//$aUser = $provider->api()->profile( 'id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
+                        $aUser = $provider->api()->profile( 'id=NULyvBV0OP:(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
+         print_r($aUser);
 			$all_users[] = $linkedin->getUsersValues(json_decode($aUser['linkedin']));
+                        
+                        break;
 		}
 		
 		// Output all users info in a csv format
 		echo "<b>Your friends information:</b><br>";
-		outputArrayCSV($all_users);
-		
+		//outputArrayCSV($all_users);
+echo "Xxxxxxxxx";       
+print_r($all_users);
 		// logout
 		echo "<br/><br/>Logging out.."; 
 		$provider->logout(); 
+
 	}
 	catch( Exception $e ){  
 		// In case we have errors 6 or 7, then we have to use Hybrid_Provider_Adapter::logout() to 

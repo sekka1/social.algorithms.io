@@ -61,7 +61,7 @@ use Everyman\Neo4j\Client,
                     $userIsSet = false;
 
                     // MERGE on this node - which will create it if it doesnt exist or return the node
-                    $queryTemplate = "MERGE (userGUIDNode:Person{source_uid:'".$this->user['source_uid']."', datasource_name:'".$this->dataSourceName."'})
+                    $queryTemplate = "MERGE (userGUIDNode:PersonGUID{source_uid:'".$this->user['source_uid']."', datasource_name:'".$this->dataSourceName."'})
                                         SET userGUIDNode.created = timestamp()
                                         RETURN userGUIDNode;";
                     $query = new Cypher\Query($this->client, $queryTemplate);
@@ -86,11 +86,7 @@ use Everyman\Neo4j\Client,
                                         startNode-[:HAS_NAME]->(nodePersonNames:Person),
                                         startNode-[:HAS_DOB]->(nodePersonDOB:Person),
                                         startNode-[:HAS_IMAGE]->(nodePersonImageURL:Person),
-                                        startNode-[:HAS_TAGES]->(nodePersonTags:Person)
- 
-                                        ".$this->buildEducationPath()."
-                                        ".$this->buildEmploymentPath()."
-                                       
+                                        startNode-[:HAS_TAGES]->(nodePersonTags:Person)                                       
 
                                         CREATE UNIQUE
                                         startNode-[:DATA_FROM]->(nodeDataSourceNameNode:DatasourceName),
@@ -113,6 +109,7 @@ use Everyman\Neo4j\Client,
                                         RETURN 
                                         nodePersonNames";
 
+//".$this->buildEmploymentPath()."                   
                    $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId(),
                                         'nodeDataSourceNameNode_value'=>$this->dataSourceName,
                                         'nodeDataMetaDataCreated_created'=>$this->user['data_meta_data']['created_at'],
@@ -128,20 +125,26 @@ use Everyman\Neo4j\Client,
                                         );
                    //echo "<br/><br/>".$queryTemplate."<br/><br/>";
                    //echo "datasourceGUIDNode: ".$this->datasourceGUIDNode->getId()."<br/>";
-                   $query = new Cypher\Query($this->client, $queryTemplate, $parameters);
-                   $r = $query->getResultSet();
+                   
+                    $query = new Cypher\Query($this->client, $queryTemplate, $parameters);
+                    $r = $query->getResultSet();
 
-               }
+                    // Insert Employment nodes
+                    $this->buildEducationPath();
+                    $this->buildEmploymentPath();
+                  }
                /**
                 * Builds the cypher path for all education and connecting to what this person was awarded
                 * Should be used with $this->addPerson() to build the education nodes/relationships
                 * 
-                * @return string
                 */
                private function buildEducationPath(){
-                   $pathString = '';
+                   //$pathString = '';
                    $count = 1;
                    foreach($this->user['educations'] as $anEducation){
+                       $pathString = 'START
+                                        startNode=node({startingNode})';
+                       
                        // Create Unique of the education this person has
                        $pathString .= 'CREATE UNIQUE startNode-[:HAS_EDUCATION]->(nodeEducation'.$count.':Education{graduated_year:"'.$anEducation['graduated_year'].'", graduated_month:"'.$anEducation['graduated_month'].'", graduated_day:"'.$anEducation['graduated_day'].'"})';
                        
@@ -152,22 +155,29 @@ use Everyman\Neo4j\Client,
                        
                        $count++;
                        
-                       if($count==8)
-                           break;
+                       $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId() );
+                       $query = new Cypher\Query($this->client, $pathString, $parameters);
+                       $r = $query->getResultSet();
+                       
+                       //if($count==8)
+                       //    break;
                        
                    }
-                   return $pathString;
+                   //return $pathString;
                }
                /**
                 * Builds the cypher path for all education and connecting to what this person was awarded
                 * Should be used with $this->addPerson() to build the employment nodes/relationships
                 * 
-                * @return string
                 */
                private function buildEmploymentPath(){
-                   $pathString = '';
+                   //$pathString = '';
                    $count = 1;
                    foreach($this->user['employments'] as $anEmployment){
+                       
+                       $pathString = 'START
+                                        startNode=node({startingNode})';
+                       
                        // CREATE UNIQUE employment node for each employment
                        $pathString .= 'CREATE UNIQUE startNode-[:HAS_EMPLOYMENT]->(nodeEmployment'.$count.':Employment{is_past:"'.$anEmployment['is_past'].'", firm_permalink:"'.$anEmployment['firm_permalink'].'", firm_name:"'.$anEmployment['firm_name'].'"})';
                        
@@ -183,13 +193,16 @@ use Everyman\Neo4j\Client,
                        // CREATE UNIQUE relationship from the employment node to this firm name
                        $pathString .= 'CREATE UNIQUE nodeEmployment'.$count.'-[:HAS_EMPLOYMENT_FIRM]->(nodeEmploymentFirm'.$count.')';
                     
-                       
                        $count++;
                        
-                       if($count==8)
-                           break;
+                       $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId() );
+                       $query = new Cypher\Query($this->client, $pathString, $parameters);
+                       $r = $query->getResultSet();
+                       
+                       //if($count==9)
+                       //    break;
                    }
-                   return $pathString;
+                   //return $pathString;
                }
 	}		
 }
