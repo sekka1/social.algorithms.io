@@ -30,7 +30,7 @@ use Everyman\Neo4j\Client,
                  * 
                  * @param array $aUser
                  */
-                public function setUser($aUser){
+                public function setValues($aUser){
                     $this->user = $aUser;
                 }
                 /**
@@ -46,10 +46,10 @@ use Everyman\Neo4j\Client,
                  * 
                  * @return boolean
                  */
-                public function processUser(){
+                public function process(){
                     
-                    $this->setCurrentUser();
-                    $this->setUsersAttributes();
+                    $this->insertData();
+                    //$this->setUsersAttributes();
                 }
 
                 /**
@@ -203,6 +203,80 @@ use Everyman\Neo4j\Client,
                        //    break;
                    }
                    //return $pathString;
+               }
+               private function insertData(){
+                   
+                   $pathString = '';
+                   
+                   //
+                   // Build Employment Firm node and properties
+                   //
+                   $pathString .= '// Build Employment Firm node and properties
+                                    MERGE (nodeEmploymentFirm:EmploymentFirm{value:"'.$this->user['source_uid'].'"})
+                                    SET nodeEmploymentFirm.crunchbase_guid = "'.$this->user['source_uid'].'"
+                                    ';
+                                    // Building company parameters
+                                    foreach($this->user['company'] as $key=>$val){
+                                        $pathString .= ' SET nodeEmploymentFirm.'.$key.' = "'.$val.'"';
+                                    }
+                                    // Building crunchbased meta data parameters
+                                    foreach($this->user['data_meta_data'] as $key=>$val){
+                                        $pathString .= ' SET nodeEmploymentFirm.'.$key.' = "'.$val.'"';
+                                    }
+//echo $pathString . "\n\n";                                 
+                    $query = new Cypher\Query($this->client, $pathString);
+                    $r = $query->getResultSet();
+
+
+                    // Clear the pathString for subsequent querys.  It seems doing it all in one big query
+                    // neo4j returns an error
+                    $pathString = '';
+
+                   // 
+                   // Build funding round nodes, invetor nodes, and properties for them
+                   // 
+                   for($n=0;$n<count($this->user['funding']);$n++){
+                       
+                       //Creating/Setting Funding node(x) data
+                       $pathString .= '// Creating/Setting Funding node(x) data
+                                        MERGE (nodeEmploymentFirm:EmploymentFirm{value:"'.$this->user['source_uid'].'"})
+                                        CREATE UNIQUE nodeEmploymentFirm-[:HAS_FUNDING]->(nodeFunding'.$n.':Funding{round:"'.$this->user['funding'][$n]['round'].'"})
+                                        ';    
+                                        // Building funding round parameters
+                                        foreach($this->user['funding'][$n] as $key=>$val){
+                                            if(!is_array($val)){
+                                                $pathString .= ' SET nodeFunding'.$n.'.'.$key.' = "'.$val.'"';
+                                            }
+                                        }
+//echo $pathString . "\n\n";                     
+                        $query = new Cypher\Query($this->client, $pathString);
+                        $r = $query->getResultSet();
+                        $pathString = '';
+                       
+                       // 
+                       // Creating/Setting Funding node1 Investors and relationship
+                       // 
+                       for($i=0;$i<count($this->user['funding'][$n]['investors']);$i++){
+                            $pathString .= '// Creating/Setting Funding node1 Investors and relationship
+                                            
+                                            // The next 2 statement is in here again to setup where to place the investor nodes
+                                            MERGE (nodeEmploymentFirm:EmploymentFirm{value:"'.$this->user['source_uid'].'"})
+                                            CREATE UNIQUE nodeEmploymentFirm-[:HAS_FUNDING]->(nodeFunding'.$n.':Funding{round:"'.$this->user['funding'][$n]['round'].'"})
+
+                                            MERGE (nodeInvestor'.$n.'_'.$i.':Investor{value:"'.$this->user['funding'][$n]['investors'][$i]['permalink'].'"})
+                                            CREATE UNIQUE nodeFunding'.$n.'-[:HAS_INVESTOR]->(nodeInvestor'.$n.'_'.$i.')
+                                            SET nodeInvestor'.$n.'_'.$i.'.name = "'.$this->user['funding'][$n]['investors'][$n]['name'].'"
+                                             ';
+//echo $pathString . "\n\n";                     
+                            $query = new Cypher\Query($this->client, $pathString);
+                            $r = $query->getResultSet();
+                            $pathString = '';
+                       }
+
+                        
+                        
+                        $pathString = '';
+                   }
                }
 	}		
 }
