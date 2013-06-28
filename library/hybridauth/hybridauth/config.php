@@ -11,7 +11,7 @@
 
 return 
 	array(
-		"base_url" => "http://social.algorithms.io/library/hybridauth/hybridauth/", 
+		"base_url" => "http://social.signiavc.com/library/hybridauth/hybridauth/", 
 
 		"providers" => array ( 
 			// openid providers
@@ -20,7 +20,7 @@ return
 			),
 
 			"Yahoo" => array ( 
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "id" => "", "secret" => "" ),
 			),
 
@@ -29,12 +29,12 @@ return
 			),
 
 			"Google" => array ( 
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "id" => "", "secret" => "" ), 
 			),
 
 			"Facebook" => array ( 
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "id" => "", "secret" => "" ), 
 			),
 
@@ -45,22 +45,22 @@ return
 
 			// windows live
 			"Live" => array ( 
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "id" => "", "secret" => "" ) 
 			),
 
 			"MySpace" => array ( 
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "key" => "", "secret" => "" ) 
 			),
 
 			"LinkedIn" => array ( 
 				"enabled" => true,
-				"keys"    => array ( "key" => "2f4tw6gtfek5", "secret" => "iBK7Oed3aJchw2kh" ) 
+				"keys"    => array ( "key" => "jpc206wc06uk", "secret" => "OZjiP50AYkXW4T0C" ) 
 			),
 
 			"Foursquare" => array (
-				"enabled" => true,
+				"enabled" => false,
 				"keys"    => array ( "id" => "", "secret" => "" ) 
 			),
 		

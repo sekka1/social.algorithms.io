@@ -228,7 +228,7 @@ namespace AlgorithmsIO\DataNormalization{
                  */
                 private function value_funding($aUser){
                     $dataArray = array();
-                    if(isset($aUser->funding_rounds)){
+                    if(isset($aUser->funding_rounds) && (count($aUser->funding_rounds)>0)){
                         foreach($aUser->funding_rounds as $anItem){
                             $data['round'] = $this->value_funding_round($anItem);
                             $data['raised_amount'] = $this->value_funding_raised_amount($anItem);
@@ -255,9 +255,9 @@ namespace AlgorithmsIO\DataNormalization{
                 private function getInvestors($investors){
                     $dataArray = array();
                     foreach($investors as $anItem){
-                        $data['name'] = $anItem->financial_org->name;
-                        $data['permalink'] = $anItem->financial_org->permalink;
-                        array_push($dataArray, $data);
+                                    $data['name'] = $anItem->financial_org->name;
+                                    $data['permalink'] = $anItem->financial_org->permalink;
+                                    array_push($dataArray, $data);
                     }
                     return $dataArray;
                 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * Garland
- * Add Crunchbase data into the the graph database
+ * Add LinkedIn data into the the graph database
  * 
  * addUser() - Addes a "user" from a CrunchBase Normalized data set into the graph database
  * 			   as one user with his various connections like jobs, education, etc
@@ -17,10 +17,15 @@ use Everyman\Neo4j\Client,
 	Everyman\Neo4j\Node,
 	Everyman\Neo4j\Cypher;
 
-	class CrunchBase extends GraphBase{
+	class Linkedin extends GraphBase{
 		
 		private $user;  // User Array
-                private $dataSourceName = 'crunchbase';
+                private $dataSourceName = 'linkedin';
+                
+                private $isHarvestSourceFriend = false;
+                private $harvestSourceLinkedInGUID = null; // GUID of where this information came from.
+                                                           // null if this is the source that is giving us 
+                                                           // the info
 		
 		public function __construct(){
 			parent::__construct();
@@ -30,15 +35,21 @@ use Everyman\Neo4j\Client,
                  * 
                  * @param array $aUser
                  */
-                public function setUser($aUser){
+                public function setValues($aUser){
                     $this->user = $aUser;
                 }
                 /**
-                 * Gets the current main user node id
-                 * @return int
+                 * Sets is $isHarvestSource to true
                  */
-                public function getMainUserIdNode(){
-                    return $this->datasourceGUIDNode->getId();
+                public function isHarvestSourceFriend(){
+                    $this->isHarvestSourceFriend = true;
+                }
+                /**
+                 * 
+                 * @param string $guid linkedin guid of the user
+                 */
+                public function setHarvestSourceGUID($guid){
+                    $this->harvestSourceLinkedInGUID = $guid;
                 }
 		/**
                  * Processes a users information.  THis user might already be in the graph db
@@ -46,10 +57,9 @@ use Everyman\Neo4j\Client,
                  * 
                  * @return boolean
                  */
-                public function processUser(){
+                public function process(){
                     
-                    $this->setCurrentUser();
-                    $this->setUsersAttributes();
+                    $this->insertData();
                 }
 
                 /**
@@ -75,134 +85,75 @@ use Everyman\Neo4j\Client,
                     return $userIsSet;
 		}
                /**
-                * Adds an entire person in and updates it if the information changes
-                */
-               private function setUsersAttributes(){
-                   $queryTemplate = "START
-                                        startNode=node({startingNode})
-
-                                        CREATE UNIQUE
-
-                                        startNode-[:HAS_NAME]->(nodePersonNames:Person),
-                                        startNode-[:HAS_DOB]->(nodePersonDOB:Person),
-                                        startNode-[:HAS_IMAGE]->(nodePersonImageURL:Person),
-                                        startNode-[:HAS_TAGES]->(nodePersonTags:Person)                                       
-
-                                        CREATE UNIQUE
-                                        startNode-[:DATA_FROM]->(nodeDataSourceNameNode:DatasourceName),
-                                        startNode-[:CREATED]->(nodeDataMetaDataCreated:DataMetaData),
-                                        startNode-[:INFO_URL]->(nodeDataMetaDataPersonURL)
-                                        
-                                        SET
-                                        nodeDataSourceNameNode.value = {nodeDataSourceNameNode_value},
-                                        nodeDataMetaDataCreated.created = {nodeDataMetaDataCreated_created},
-                                        nodeDataMetaDataCreated.updated = {nodeDataMetaDataCreated_updated},
-                                        nodeDataMetaDataPersonURL.value = {nodeDataMetaDataPersonURL_value},
-                                        nodePersonNames.firstName = {nodePersonNames_firstName}, 
-                                        nodePersonNames.lastName = {nodePersonNames_lastName}, 
-                                        nodePersonDOB.born_year = {nodePersonDOB_born_year},
-                                        nodePersonDOB.born_month = {nodePersonDOB_born_month},
-                                        nodePersonDOB.born_day = {nodePersonDOB_born_day},
-                                        nodePersonImageURL.image_url = {nodePersonImageURL_image_url},
-                                        nodePersonTags.tags = {nodePersonTags_tags}
-
-                                        RETURN 
-                                        nodePersonNames";
-
-//".$this->buildEmploymentPath()."                   
-                   $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId(),
-                                        'nodeDataSourceNameNode_value'=>$this->dataSourceName,
-                                        'nodeDataMetaDataCreated_created'=>$this->user['data_meta_data']['created_at'],
-                                        'nodeDataMetaDataCreated_updated'=>$this->user['data_meta_data']['updated_at'],
-                                        'nodeDataMetaDataPersonURL_value'=>$this->user['data_meta_data']['crunchbase_url'],
-                                        'nodePersonNames_firstName'=>$this->user['person']['firstName'],
-                                        'nodePersonNames_lastName'=>$this->user['person']['lastName'],
-                                        'nodePersonDOB_born_year'=>$this->user['person']['born_year'],
-                                        'nodePersonDOB_born_month'=>$this->user['person']['born_month'],
-                                        'nodePersonDOB_born_day'=>$this->user['person']['born_day'],
-                                        'nodePersonImageURL_image_url'=>$this->user['person']['image_url'],
-                                        'nodePersonTags_tags'=>$this->user['person']['tag_list']
-                                        );
-                   //echo "<br/><br/>".$queryTemplate."<br/><br/>";
-                   //echo "datasourceGUIDNode: ".$this->datasourceGUIDNode->getId()."<br/>";
-                   
-                    $query = new Cypher\Query($this->client, $queryTemplate, $parameters);
-                    $r = $query->getResultSet();
-
-                    // Insert Employment nodes
-                    $this->buildEducationPath();
-                    $this->buildEmploymentPath();
-                  }
-               /**
-                * Builds the cypher path for all education and connecting to what this person was awarded
-                * Should be used with $this->addPerson() to build the education nodes/relationships
+                * Inserts all the data into the graph db.
                 * 
                 */
-               private function buildEducationPath(){
-                   //$pathString = '';
-                   $count = 1;
-                   foreach($this->user['educations'] as $anEducation){
-                       $pathString = 'START
-                                        startNode=node({startingNode})';
-                       
-                       // Create Unique of the education this person has
-                       $pathString .= 'CREATE UNIQUE startNode-[:HAS_EDUCATION]->(nodeEducation'.$count.':Education{graduated_year:"'.$anEducation['graduated_year'].'", graduated_month:"'.$anEducation['graduated_month'].'", graduated_day:"'.$anEducation['graduated_day'].'"})';
-                       
-                       // MERGE - create the Degree node only if it doesnt exists
-                       $pathString .= 'MERGE (nodeAwarded'.$count.':Degree {value: "'.$anEducation['type'].'"})';
-                       // CREATE UNIQUE relationship from education to the degree awarded
-                       $pathString .= ' CREATE UNIQUE nodeEducation'.$count.'-[:AWARDED]->(nodeAwarded'.$count.')';
-                       
-                       $count++;
-                       
-                       $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId() );
-                       $query = new Cypher\Query($this->client, $pathString, $parameters);
-                       $r = $query->getResultSet();
-                       
-                       //if($count==8)
-                       //    break;
-                       
-                   }
-                   //return $pathString;
+               private function insertData(){
+                   $this->insertPerson();
+                   $this->insertEmployment();
+                   if($this->isHarvestSourceFriend)
+                       $this->createFriendRelationship();
                }
                /**
-                * Builds the cypher path for all education and connecting to what this person was awarded
-                * Should be used with $this->addPerson() to build the employment nodes/relationships
+                * Inserts/update the main person node for linkedin
                 * 
                 */
-               private function buildEmploymentPath(){
-                   //$pathString = '';
-                   $count = 1;
-                   foreach($this->user['employments'] as $anEmployment){
+               private function insertPerson(){
+                   $pathString = '// Inserting the main person node
+                                MERGE (userGUIDNode:PersonGUID{source_uid:"'.$this->user['source_uid'].'", datasource_name:"'.$this->dataSourceName.'"})
+                                SET userGUIDNode.created = timestamp()';
+                                
+                                foreach($this->user['person'] as $key=>$val){
+                                    $pathString .= ' SET userGUIDNode.'.$key.' = "'.$val.'"';
+                                }
+
+                   $pathString .= 'RETURN userGUIDNode';
+echo $pathString;           
+                 
+                   $query = new Cypher\Query($this->client, $pathString);
+                   $r = $query->getResultSet();                 
+               }
+               /**
+                * Inserts/update employment
+                */
+               private function insertEmployment(){
+                   $n=0;
+                   foreach($this->user['employments'] as $item){
+                       $pathString = '// Inserting Employment
+                                    MERGE (userGUIDNode:PersonGUID{source_uid:"'.$this->user['source_uid'].'", datasource_name:"'.$this->dataSourceName.'"})
+                                    MERGE (nodeEmployment'.$n.':Employment{position_id:"'.$item['position_id'].'"})
+                                    CREATE UNIQUE userGUIDNode-[:HAS_EMPLOYMENT]->(nodeEmployment'.$n.')
+                                    
+                                    // Employment Firm/company node and the relationship to it
+                                    MERGE (nodeEmploymentFirm'.$n.':EmploymentFirm{id:"'.$item['company_id'].'", name:"'.$item['name'].'"})
+                                    CREATE UNIQUE (nodeEmployment'.$n.')-[:HAS_EMPLOYMENT_FIRM]->(nodeEmploymentFirm'.$n.')
+                                    ';
                        
-                       $pathString = 'START
-                                        startNode=node({startingNode})';
-                       
-                       // CREATE UNIQUE employment node for each employment
-                       $pathString .= 'CREATE UNIQUE startNode-[:HAS_EMPLOYMENT]->(nodeEmployment'.$count.':Employment{is_past:"'.$anEmployment['is_past'].'", firm_permalink:"'.$anEmployment['firm_permalink'].'", firm_name:"'.$anEmployment['firm_name'].'"})';
-                       
-                       // Employment Title
-                       // MERGE - create title node only if it doesnt exists
-                       $pathString .= 'MERGE (nodeEmploymentTitle'.$count.':EmploymentTitle{value:"'.$anEmployment['title'].'"})';
-                       // CREATE UNIQUE relationship from the employment node to this title
-                       $pathString .= 'CREATE UNIQUE nodeEmployment'.$count.'-[:HAS_EMPLOYMENT_TITLE]->(nodeEmploymentTitle'.$count.')';
-                       
-                       // Employment Firm/Company name/worked at
-                       // MERGE - create firm node only if it doesnt exists
-                       $pathString .= 'MERGE (nodeEmploymentFirm'.$count.':EmploymentFirm{value:"'.$anEmployment['firm_name'].'"})';
-                       // CREATE UNIQUE relationship from the employment node to this firm name
-                       $pathString .= 'CREATE UNIQUE nodeEmployment'.$count.'-[:HAS_EMPLOYMENT_FIRM]->(nodeEmploymentFirm'.$count.')';
-                    
-                       $count++;
-                       
-                       $parameters = array( 'startingNode'=>$this->datasourceGUIDNode->getId() );
-                       $query = new Cypher\Query($this->client, $pathString, $parameters);
+                                    foreach($item as $key=>$val){
+                                        $pathString .= ' SET nodeEmployment'.$n.'.'.$key.' = "'.$val.'"';
+                                    }
+echo $pathString."\n\n"; 
+                       $query = new Cypher\Query($this->client, $pathString);
                        $r = $query->getResultSet();
-                       
-                       //if($count==9)
-                       //    break;
+                       $n++;
+
                    }
-                   //return $pathString;
+               }
+               /**
+                * Creates a bi-directional friend relationship
+                */
+               private function createFriendRelationship(){
+                   $pathString = '// Source Friend
+                                    MERGE (sourceFriend:PersonGUID{source_uid:"'.$this->harvestSourceLinkedInGUID.'", datasource_name:"linkedin"})
+                                    // Friend
+                                    MERGE (friend:PersonGUID{source_uid:"'.$this->user['source_uid'].'", datasource_name:"linkedin"})
+                                    // Create Friend Relationship
+                                    CREATE UNIQUE (sourceFriend)-[:IS_FRIEND]->(friend)
+                                    CREATE UNIQUE (friend)-[:IS_FRIEND]->(sourceFriend)
+                                    RETURN sourceFriend, friend';
+echo $pathString."\n\n"; 
+                   $query = new Cypher\Query($this->client, $pathString);
+                   $r = $query->getResultSet();
                }
 	}		
 }

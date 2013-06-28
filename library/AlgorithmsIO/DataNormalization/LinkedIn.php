@@ -6,7 +6,7 @@
  * in a normalized array.
  * 
  */
-namespace AlgorithmsIO{
+namespace AlgorithmsIO\DataNormalization{
 
 	class LinkedIn{
 		
@@ -75,7 +75,9 @@ namespace AlgorithmsIO{
                         $dataArray['numConnections'] = $this->value_numConnections($aUser);
                         $dataArray['numConnectionsCapped'] = $this->value_numConnectionsCapped($aUser);
                         $dataArray['pictureUrl'] = $this->value_pictureUrl($aUser);
-			
+                        $dataArray['specialties'] = $this->value_specialties($aUser);
+			$dataArray['summary'] = $this->value_summary($aUser);
+                        
 			return $dataArray;
 		}
                 
@@ -139,6 +141,18 @@ namespace AlgorithmsIO{
 			else
 				return null;
 		}
+                private function value_specialties($aUser){
+			if(isset($aUser->specialties))
+				return $aUser->specialties;
+			else
+				return null;
+		}
+                private function value_summary($aUser){
+			if(isset($aUser->summary))
+				return $aUser->summary;
+			else
+				return null;
+		}
                 
                 /**
 		 * Retrieves all the education and returns an array of it
@@ -148,7 +162,8 @@ namespace AlgorithmsIO{
                     if(isset($aUser->positions)){
                         if(isset($aUser->positions->values)){
                             foreach($aUser->positions->values as $anItem){
-                                $data['id'] = $this->value_positions_company_id($anItem);
+                                $data['position_id'] = $this->value_position_id($anItem);
+                                $data['company_id'] = $this->value_positions_company_id($anItem);
                                 $data['industry'] = $this->value_positions_company_industry($anItem);
                                 $data['name'] = $this->value_positions_company_name($anItem);
                                 $data['size'] = $this->value_positions_company_size($anItem);
@@ -168,7 +183,14 @@ namespace AlgorithmsIO{
                 
                 // Need to make unit tests for these classes
                 
-                
+                private function value_position_id($aUser){
+			$value = null;
+                       
+			if(isset($aUser->id)){
+                            $value = $aUser->id;
+                        }
+			return $value;
+		}
 		private function value_positions_company_id($aUser){
 			$value = null;
                        
