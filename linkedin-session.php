@@ -14,40 +14,27 @@ include('library/AlgorithmsIO/GraphModels/Linkedin.php');
 $all_users = array(); 
 $linkedin = new \AlgorithmsIO\DataNormalization\LinkedIn();
 
+$hybridauth_session_data = 'a:4:{s:50:"hauth_session.linkedin.token.access_token_linkedin";s:229:"a:4:{s:11:"oauth_token";s:36:"451fdcfb-cd6f-492a-aed5-d00919ceb655";s:18:"oauth_token_secret";s:36:"7a9525ad-2fc7-4a2f-8b4d-4689bb813cdd";s:16:"oauth_expires_in";s:7:"5183999";s:30:"oauth_authorization_expires_in";s:7:"5183999";}";s:41:"hauth_session.linkedin.token.access_token";s:44:"s:36:"451fdcfb-cd6f-492a-aed5-d00919ceb655";";s:48:"hauth_session.linkedin.token.access_token_secret";s:44:"s:36:"7a9525ad-2fc7-4a2f-8b4d-4689bb813cdd";";s:35:"hauth_session.linkedin.is_logged_in";s:4:"i:1;";}';
+
 session_start(); 
 
 	try{
 		// hybridauth EP
 		$hybridauth = new Hybrid_Auth( $config );
 
-		// automatically try to login with the given provider
-		$provider = $hybridauth->authenticate( "LinkedIn" );
-     
+		// Restore session data
+                $hybridauth->restoreSessionData( $hybridauth_session_data );
+                $provider = $hybridauth->getAdapter("LinkedIn");
+                
+                // 
+                // Can continue calling the provider as regular from this point on
+                // 
+
 		// return TRUE or False <= generally will be used to check if the user is connected to twitter before getting user profile, posting stuffs, etc..
 		$is_user_logged_in = $provider->isUserConnected();
 
 		// get the user profile 
 		$user_profile = $provider->getUserProfile();
-                
-                
-                
-                $hybridauth_session_data = $hybridauth->getSessionData();
-                
-                //
-                // Killing the page here for now until we figure out what to do next
-                // Send this to a queue? process and make user wait?
-                //
-                echo "Thanks for signing in ". $user_profile->displayName;
-                echo "<br/><br/>Here is the data we are collecting: <br/>". $hybridauth_session_data;
-                exit;               
-                //
-                //
-                //
-                //
-                //
-                
-                
-                
 
 		// access user profile data
 		echo "You are connected with: <b>{$provider->id}</b><br />";
@@ -57,7 +44,9 @@ session_start();
 
 		// or even inspect it
 		echo "<pre>" . print_r( $user_profile, true ) . "</pre><br />";
-              
+
+//print_r($hybridauth->getSessionData());            
+exit;                
 		// Retrieves all the user's connections
 		$connections_list = $provider->api()->profile( '~/connections?format=json', 'get' );
 print_r($connections_list);
