@@ -3,35 +3,33 @@
  * Retrieves CrunchBase Company Info and inserts it into the Graph DB
  * 
  * 
- */
-
+ */    
 ini_set('error_reporting', E_ALL);
 ini_set('memory_limit', '512M');
-ini_set('max_execution_time', 6000);
+ini_set('max_execution_time', 60000);
 
 // Hybrid config and includes
 $config = 'library/hybridauth/hybridauth/config.php';
 require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
-
 
 // Data Normalization
 include('library/AlgorithmsIO/DataNormalization/CrunchBaseCompany.php');
 // Graph DB
 include('library/AlgorithmsIO/GraphModels/CrunchBaseCompany.php');
 
+$start_number = 70000;
+$log_file = '/opt/logs/crunchbaseCompany/adding_crunchbase_company_start_'.$start_number.'k.txt';
+
 // Script Vars
 //$all_users = array(); 
 $crunchbaseNormalize = new \AlgorithmsIO\DataNormalization\CrunchBaseCompany();
 $crunchbaseGraphModel = new \AlgorithmsIO\GraphModels\CrunchBaseCompany();
 
-session_start(); 
-
 // Crunchbase Users
 //$crunchbase_users = '[{"first_name":"Ben","last_name":"Elowitz","permalink":"ben-elowitz"},{"first_name":"Kevin","last_name":"Flaherty","permalink":"kevin-flaherty"},{"first_name":"Raju","last_name":"Vegesna","permalink":"raju-vegesna"},{"first_name":"Ian","last_name":"Wenig","permalink":"ian-wenig"},{"first_name":"Kevin","last_name":"Rose","permalink":"kevin-rose"},{"first_name":"Jay","last_name":"Adelson","permalink":"jay-adelson"},{"first_name":"Owen","last_name":"Byrne","permalink":"owen-byrne"},{"first_name":"Ron","last_name":"Gorodetzky","permalink":"ron-gorodetzky"},{"first_name":"Mark","last_name":"Zuckerberg","permalink":"mark-zuckerberg"},{"first_name":"Dustin","last_name":"Moskovitz","permalink":"dustin-moskovitz"},{"first_name":"Owen","last_name":"Van Natta","permalink":"owen-van-natta"},{"first_name":"Matt","last_name":"Cohler","permalink":"matt-cohler"},{"first_name":"Chris","last_name":"Hughes","permalink":"chris-hughes"},{"first_name":"Alex","last_name":"Welch","permalink":"alex-welch"},{"first_name":"Darren","last_name":"Crystal","permalink":"darren-crystal"},{"first_name":"Michael","last_name":"Clark","permalink":"michael-clark"},{"first_name":"Greg","last_name":"Wimmer","permalink":"greg-wimmer"},{"first_name":"Peter","last_name":"Foster","permalink":"peter-foster"},{"first_name":"Heather","last_name":"Dana","permalink":"heather-dana"},{"first_name":"Peter","last_name":"Pham","permalink":"peter-pham"},{"first_name":"Scott","last_name":"Penberthy","permalink":"scott-penberthy"},{"first_name":"Alice","last_name":"Lankester","permalink":"alice-lankester"},{"first_name":"Alex","last_name":"Musil","permalink":"alex-musil"},{"first_name":"Peter","last_name":"Thiel","permalink":"peter-thiel"},{"first_name":"Gus","last_name":"Tai","permalink":"gus-tai"},{"first_name":"David","last_name":"Sacks","permalink":"david-sacks"},{"first_name":"Alan","last_name":"Braverman","permalink":"alan-braverman"},{"first_name":"Ken","last_name":"Howery","permalink":"ken-howery"},{"first_name":"Luke","last_name":"Nosek","permalink":"luke-nosek"},{"first_name":"Sean","last_name":"Parker","permalink":"sean-parker"},{"first_name":"George","last_name":"Zachary","permalink":"george-zachary"},{"first_name":"Greg","last_name":"Waldorf","permalink":"greg-waldorf"},{"first_name":"Jason","last_name":"Rubin","permalink":"jason-rubin"},{"first_name":"Andy","last_name":"Gavin","permalink":"andy-gavin"},{"first_name":"Jason","last_name":"Kay","permalink":"jason-kay"},{"first_name":"Evan","last_name":"Williams","permalink":"evan-williams"},{"first_name":"Garrett","last_name":"Camp","permalink":"garrett-camp"},{"first_name":"Geoff","last_name":"Smith","permalink":"geoff-smith"},{"first_name":"Justin","last_name":"LeFrance","permalink":"justin-lafrance"},{"first_name":"Jack","last_name":"Dorsey","permalink":"jack-dorsey"},{"first_name":"Jason","last_name":"Goldman","permalink":"jason-goldman"},{"first_name":"Biz","last_name":"Stone","permalink":"biz-stone"},{"first_name":"Eyal","last_name":"Gever","permalink":"eyal-gever"},{"first_name":"Efrat","last_name":"Moshkoviz","permalink":"efrat-moshkoviz"},{"first_name":"Amihay","last_name":"Zer Kavod","permalink":"amihay-zer-kavod"}]';
 //$crunchbase_users = '[{"first_name":"Kevin","last_name":"Flaherty","permalink":"leap-in-entertainment"}]';
 $crunchbase_users = file_get_contents('data/crunchbase_companies_062513.json');
-        
-        
+
 	try{
             
 		// hybridauth EP
@@ -44,12 +42,12 @@ $crunchbase_users = file_get_contents('data/crunchbase_companies_062513.json');
 		//print_r($person);
 		//$aUser = $crunchbaseNormalize->getUsersValues(json_decode($person['crunchbase']));
                 //print_r($aUser);
-	
+
                 
-                system('echo "Starting\n" > /tmp/adding_crunchbase_company.txt');
+                system('echo "Starting\n" > '.$log_file);
                 $crunchbase_users_array = json_decode($crunchbase_users);
-                
-                for($i=12958;$i<count($crunchbase_users_array);$i++){
+
+                for($i=$start_number;$i<count($crunchbase_users_array);$i++){
                 //foreach($crunchbase_users_array as $aUser){
                 
                     // Get data from crunchbase
@@ -64,8 +62,7 @@ $crunchbase_users = file_get_contents('data/crunchbase_companies_062513.json');
                     
                     //echo "Added user into node: ". $graphModel->getMainUserIdNode()."<br/>";
                     
-                    system('echo '.$i.'") Added user into node: "'.$aUserInfo['source_uid'] .'"\n" >> /tmp/adding_crunchbase_company.txt');
-                    
+                    system('echo '.$i.'") Added user into node: "'.$aUserInfo['source_uid'] .'"\n" >> '.$log_file);             
                 }
                 
                 //
