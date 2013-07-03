@@ -17,7 +17,7 @@ include('library/AlgorithmsIO/DataNormalization/CrunchBaseCompany.php');
 // Graph DB
 include('library/AlgorithmsIO/GraphModels/CrunchBaseCompany.php');
 
-$start_number = 70000;
+$start_number = 140000;
 $log_file = '/opt/logs/crunchbaseCompany/adding_crunchbase_company_start_'.$start_number.'k.txt';
 
 // Script Vars
