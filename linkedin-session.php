@@ -1,4 +1,13 @@
 <?php
+/**
+ * This script takes in a Hybridauth session data from LinkedIn and creates a
+ * session out of it.
+ * 
+ * The purpose of this file is to run this script on a back end process by
+ * passing it the session data so that you are not holding the user's session
+ * the entire time while harvesting their data.
+ */
+
 ini_set('error_reporting', E_ALL);
 
 // Hybrid config and includes
