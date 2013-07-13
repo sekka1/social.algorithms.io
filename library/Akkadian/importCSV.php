@@ -10,10 +10,10 @@
  */
 
 $importCSV = new ImportCSV();
-$importCSV->setCSVFile('/tmp/Rounds.csv');
+$importCSV->setCSVFile('/tmp/RatingsH22012.csv');
 $importCSV->setMySQLConnection('localhost', 'akkadian', 'akkadian1298');
 $importCSV->setDatabaseName('akkadian');
-$importCSV->setTablName('funding_rounds');
+$importCSV->setTablName('ratings');
 $importCSV->mySQLConnect();
 $importCSV->useHeaderAsFieldNames();
 //$importCSV->stopOnError();

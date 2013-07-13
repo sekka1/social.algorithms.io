@@ -6,17 +6,18 @@
 */
 
 /**
- * Hybrid_Providers_Crunchbase
+ * Hybrid_Providers_AngelList
  * 
- * Requires no authentication.  Just need an api key in the GET URL.
+ * Requires no authentication.  Just need an access token in the GET URL.
+ * Once you have an access token.  It never expires (per the Angel List API doc).
  */
-class Hybrid_Providers_Crunchbase extends Hybrid_Provider_Model
+class Hybrid_Providers_AngelList extends Hybrid_Provider_Model
 {
 	// default permissions  
 	public $scope = "";
 	
-	private $api_base_url = "http://api.crunchbase.com/v/1/";
-	private $api_key = "null";
+	private $api_base_url = "https://api.angel.co/1/";
+	private $access_token = "null";
 	 
 	/**
 	* IDp wrappers initializer 
@@ -24,7 +25,7 @@ class Hybrid_Providers_Crunchbase extends Hybrid_Provider_Model
 	function initialize() 
 	{
 		//parent::initialize();
-		$this->api_key = $this->config['keys']['api_key'];
+		$this->access_token = $this->config['keys']['access_token'];
 	}
 	function loginBegin(){}
 	function loginFinish(){}
@@ -38,11 +39,11 @@ class Hybrid_Providers_Crunchbase extends Hybrid_Provider_Model
 	public function isUserConnected(){
 		return true;
 	}
-	public function get($endpoint=null){
+	function get($endpoint=null){
 
-            $data['crunchbase'] = file_get_contents($this->api_base_url . $endpoint.$this->getURLParamSeparator($endpoint)."api_key=".$this->api_key);
+		$data['angellist'] = file_get_contents($this->api_base_url . $endpoint.$this->getURLParamSeparator($endpoint)."access_token=".$this->access_token);
 
-            return $data;
+		return $data;
 	}
         /**
          * Returns an & or ? depending on what is already in the URL.
@@ -56,5 +57,4 @@ class Hybrid_Providers_Crunchbase extends Hybrid_Provider_Model
             else
                 return '?';
         }
-        
 }

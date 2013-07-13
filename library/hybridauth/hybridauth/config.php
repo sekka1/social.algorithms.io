@@ -68,6 +68,10 @@ return
 				"enabled" => true,
 				"keys"    => array ( "api_key" => "gprbxgqh5kq3pm2nbrzyf7dd" ) 
 			),
+			"AngelList" => array (
+				"enabled" => true,
+				"keys"    => array ( "access_token" => "3d3b8729cee531333ecfc741a5d4aecd" ) 
+			)
 		),
 
 		// if you want to enable logging, set 'debug_mode' to true  then provide a writable file by the web server on "debug_file"
