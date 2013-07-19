@@ -13,14 +13,14 @@ use Everyman\Neo4j\Client,
 
 	class GraphBase{
 		
-                private $db_host = '166.78.24.138';
+                private $db_host = '166.78.27.160';
                 private $db_port = '7474';
                 
 		protected $client;
 		protected $datasourceGUIDNode = null; // This is a node object of the main id node
 		
 		public function __construct(){
-                    $host = '166.78.24.138';
+                    $host = '166.78.27.160';
                     $port = '7474';
                     $this->client = new Client($host, $port);
 		}

@@ -1,11 +1,12 @@
 <?php
 /**
- * Garland
+ * 
  * Add Crunchbase data into the the graph database
  * 
  * addUser() - Addes a "user" from a CrunchBase Normalized data set into the graph database
  * 			   as one user with his various connections like jobs, education, etc
  * 
+ * @author Garland
  */
 
 namespace AlgorithmsIO\GraphModels{
