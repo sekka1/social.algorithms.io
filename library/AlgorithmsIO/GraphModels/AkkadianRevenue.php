@@ -68,8 +68,14 @@ use Everyman\Neo4j\Client,
 
                                     RETURN akkadian_uid_node, revenue_node, r';
 //echo          $pathString;         
-                    $query = new Cypher\Query($this->client, $pathString);
-                    $r = $query->getResultSet();
+                    try{
+                        $query = new Cypher\Query($this->client, $pathString);
+
+                        $r = $query->getResultSet();
+                    }catch(\Everyman\Neo4j\Exception $e){
+                        echo $e;
+                        echo $pathString."\n";
+                    }
 //print_r($r);
                }
                /**

@@ -175,7 +175,7 @@ namespace AlgorithmsIO\DataNormalization{
 		}
                 private function value_investor($aUser){
 			if(isset($aUser->investor)){
-                            if($auser->investor)
+                            if($aUser->investor)
                                 return 'true';
                             else
                                 return 'false';
@@ -296,7 +296,7 @@ namespace AlgorithmsIO\DataNormalization{
                  */
                 private function pruneValue($value){
                     $value = strtolower($value);
-                    $value = mysql_real_escape_string($value);
+                    //$value = mysql_real_escape_string($value);
                     return $value;
                 }
 	}

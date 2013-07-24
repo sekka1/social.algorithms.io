@@ -13,10 +13,12 @@ use Everyman\Neo4j\Client,
 	Everyman\Neo4j\Node,
 	Everyman\Neo4j\Cypher;
 
-	class AkkadianRatings extends GraphBase{
+	class AngelListRole extends GraphBase{
 		
 		private $data;  // main data Array
-                private $dataSourceName = 'akkadian';
+                private $dataSourceName = 'angelList';
+                
+                private $personGUID;
 		
 		public function __construct(){
 			parent::__construct();
@@ -28,6 +30,14 @@ use Everyman\Neo4j\Client,
                  */
                 public function setValues($data){
                     $this->data = $data;
+                }
+                /**
+                 * Setting the person's guid whos these role's belong to
+                 *
+                 * @param int $guid
+                 */
+                public function setPersonGUID($guid){
+                    $this->personGUID = $guid;
                 }
 		/**
                  * Processes a users information.  THis user might already be in the graph db
@@ -42,52 +52,56 @@ use Everyman\Neo4j\Client,
                /**
                 * Inserts the data into the graph db.
                 * 
-                * FIXME: Had to separate the insert query out into multiple sections.  If trying
-                * to do one big query, the DB throws some weird error.
+                * Need to pass in the person who owns all these roles.
+                * 
+                * 
                 */
                private function insertData(){
                    
-                   $pathString = '';
-                   
                    //
                    //
                    //
-                   $pathString .= '// Create Akkadian Main uid node and properties
-                                    MERGE (akkadian_uid_node:CompanyGUID{value:'.$this->data['idCompany'].',datasource_name:"'.$this->dataSourceName.'"}),
-                                    (rating_node:AkkadianRating{idCompany:'.$this->data['idCompany'].'})
+                   foreach($this->data['startup_roles'] as $item){
+                       
+                      $pathString = '';
+                      
+                      $pathString .= '// MERGE main uid node
+                                        MERGE (angel_list_uid_node:PersonGUID{value:'.$this->personGUID.',datasource_name:"'.$this->dataSourceName.'"}),
+                                        (role_node:alRole{role_id:"'.$item['role_id'].'"})
+                                        // Set properties for this node
+                                        //SET role_node.role = "employee"
+                                        //SET role_node.created_at = "2012-11-28t02:26:13z"
+                                        
+                                        '.$this->buildSetPropertyString($item).'
 
-                                    // Set this nodes properties
-                                    //SET rating_node.activeMI = 1
-                                    '.
-                                    $this->buildSetPropertyString()
-                                    .'
-                                            // ETC
+                                                // ETC
+                                        // Create Relationship
+                                        CREATE UNIQUE (angel_list_uid_node)-[:HAS_ROLE]->(role_node)';
 
-                                    // Create Relationship
-                                    CREATE UNIQUE akkadian_uid_node-[r:HAS_RATING_INFO]->rating_node
+        //echo          $pathString."\n\n";         
 
-                                    RETURN akkadian_uid_node, rating_node, r';
-//echo          $pathString;         
-                    try{
-                        $query = new Cypher\Query($this->client, $pathString);
+                            try{
+                                $query = new Cypher\Query($this->client, $pathString);
 
-                        $r = $query->getResultSet();
-                    }catch(\Everyman\Neo4j\Exception $e){
-                        echo $e;
-                        echo $pathString."\n";
-                    }
+                                $r = $query->getResultSet();
+                            }catch(\Everyman\Neo4j\Exception $e){
+                                echo $e;
+                                echo $pathString."\n";
+                            }
+                   }
 //print_r($r);
+
                }
                /**
                 * Creates the set property string for making this node
                 * 
                 * @return string Description
                 */
-               private function buildSetPropertyString(){
+               private function buildSetPropertyString($properties){
                    $string = '';
                    
-                   foreach($this->data as $key=>$val){
-                            $string .= ' SET rating_node.'.$key.' = '.$this->getParamQuoting($val);
+                   foreach($properties as $key=>$val){
+                            $string .= ' SET role_node.'.$key.' = '.$this->getParamQuoting($val);
                    }
                    return $string;
                }

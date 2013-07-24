@@ -13,10 +13,10 @@ use Everyman\Neo4j\Client,
 	Everyman\Neo4j\Node,
 	Everyman\Neo4j\Cypher;
 
-	class AkkadianRatings extends GraphBase{
+	class AngelListUser extends GraphBase{
 		
 		private $data;  // main data Array
-                private $dataSourceName = 'akkadian';
+                private $dataSourceName = 'angelList';
 		
 		public function __construct(){
 			parent::__construct();
@@ -38,6 +38,7 @@ use Everyman\Neo4j\Client,
                 public function process(){
                     
                     $this->insertData();
+                    $this->addSkills();
                 }
                /**
                 * Inserts the data into the graph db.
@@ -52,22 +53,16 @@ use Everyman\Neo4j\Client,
                    //
                    //
                    //
-                   $pathString .= '// Create Akkadian Main uid node and properties
-                                    MERGE (akkadian_uid_node:CompanyGUID{value:'.$this->data['idCompany'].',datasource_name:"'.$this->dataSourceName.'"}),
-                                    (rating_node:AkkadianRating{idCompany:'.$this->data['idCompany'].'})
+                   $pathString .= '// MERGE main uid node
+                                        MERGE (angel_list_uid_node:PersonGUID{value:'.$this->data['source_uid'].',datasource_name:"'.$this->dataSourceName.'"})
+                                        // Set properties for this node
+                                        //SET angel_list_uid_node.name = "brandon leonardo"
+                                        //SET angel_list_uid_node.follower_count = 531'
+                            
+                                        .$this->buildSetPropertyString($this->data['person']);
+                   
+//echo          $pathString."\n\n";         
 
-                                    // Set this nodes properties
-                                    //SET rating_node.activeMI = 1
-                                    '.
-                                    $this->buildSetPropertyString()
-                                    .'
-                                            // ETC
-
-                                    // Create Relationship
-                                    CREATE UNIQUE akkadian_uid_node-[r:HAS_RATING_INFO]->rating_node
-
-                                    RETURN akkadian_uid_node, rating_node, r';
-//echo          $pathString;         
                     try{
                         $query = new Cypher\Query($this->client, $pathString);
 
@@ -79,15 +74,51 @@ use Everyman\Neo4j\Client,
 //print_r($r);
                }
                /**
+                * Adding skills
+                */
+               private function addSkills(){
+                   
+                   foreach($this->data['skills'] as $anItem){
+                        $pathString = '';
+
+                        //
+                        //
+                        //
+                        $pathString .= '// MERGE main uid node
+                                             MERGE (angel_list_uid_node:PersonGUID{value:'.$this->data['source_uid'].',datasource_name:"'.$this->dataSourceName.'"}),
+                                             (skill_node:alSkill{id:'.$anItem['id'].'})
+                                             // Set properties for this node
+                                             //SET skill_node.tag_type = "skilltag"
+                                             //SET skill_node.name = "ruby on rails"
+                                                     // ETC
+                                             '.$this->buildSetPropertyString($anItem).'
+
+
+                                             // Create Relationship
+                                             CREATE UNIQUE (angel_list_uid_node)-[:HAS_SKILL]->(skill_node)';
+
+     //echo          $pathString."\n\n"; 
+     
+                         try{
+                             $query = new Cypher\Query($this->client, $pathString);
+
+                             $r = $query->getResultSet();
+                         }catch(\Everyman\Neo4j\Exception $e){
+                             echo $e;
+                             echo $pathString."\n";
+                         }
+                   }
+               }
+               /**
                 * Creates the set property string for making this node
                 * 
                 * @return string Description
                 */
-               private function buildSetPropertyString(){
+               private function buildSetPropertyString($properties){
                    $string = '';
                    
-                   foreach($this->data as $key=>$val){
-                            $string .= ' SET rating_node.'.$key.' = '.$this->getParamQuoting($val);
+                   foreach($properties as $key=>$val){
+                            $string .= ' SET angel_list_uid_node.'.$key.' = '.$this->getParamQuoting($val);
                    }
                    return $string;
                }

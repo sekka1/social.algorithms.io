@@ -23,7 +23,7 @@ include('library/AlgorithmsIO/GraphModels/Linkedin.php');
 $all_users = array(); 
 $linkedin = new \AlgorithmsIO\DataNormalization\LinkedIn();
 
-$hybridauth_session_data = 'a:4:{s:50:"hauth_session.linkedin.token.access_token_linkedin";s:229:"a:4:{s:11:"oauth_token";s:36:"451fdcfb-cd6f-492a-aed5-d00919ceb655";s:18:"oauth_token_secret";s:36:"7a9525ad-2fc7-4a2f-8b4d-4689bb813cdd";s:16:"oauth_expires_in";s:7:"5183999";s:30:"oauth_authorization_expires_in";s:7:"5183999";}";s:41:"hauth_session.linkedin.token.access_token";s:44:"s:36:"451fdcfb-cd6f-492a-aed5-d00919ceb655";";s:48:"hauth_session.linkedin.token.access_token_secret";s:44:"s:36:"7a9525ad-2fc7-4a2f-8b4d-4689bb813cdd";";s:35:"hauth_session.linkedin.is_logged_in";s:4:"i:1;";}';
+$hybridauth_session_data = 'a:4:{s:50:"hauth_session.linkedin.token.access_token_linkedin";s:229:"a:4:{s:11:"oauth_token";s:36:"d68a8ce2-a800-489d-bc56-5e8a9a983b97";s:18:"oauth_token_secret";s:36:"3bf01d9f-44ea-4087-b2c0-cc56ad75625e";s:16:"oauth_expires_in";s:7:"5183999";s:30:"oauth_authorization_expires_in";s:7:"5183999";}";s:41:"hauth_session.linkedin.token.access_token";s:44:"s:36:"d68a8ce2-a800-489d-bc56-5e8a9a983b97";";s:48:"hauth_session.linkedin.token.access_token_secret";s:44:"s:36:"3bf01d9f-44ea-4087-b2c0-cc56ad75625e";";s:35:"hauth_session.linkedin.is_logged_in";s:4:"i:1;";}';
 
 session_start(); 
 
@@ -55,22 +55,24 @@ session_start();
 		echo "<pre>" . print_r( $user_profile, true ) . "</pre><br />";
 
 //print_r($hybridauth->getSessionData());            
-exit;                
+//exit;                
 		// Retrieves all the user's connections
-		$connections_list = $provider->api()->profile( '~/connections?format=json', 'get' );
-print_r($connections_list);
+		//$connections_list = $provider->api()->profile( '~/connections?format=json', 'get' );
+//print_r($connections_list);
 
-		$connections_list_object = json_decode($connections_list['linkedin']);
+		//$connections_list_object = json_decode($connections_list['linkedin']);
                 
                 //
                 // Insert the user that is giving us access into the db
                 //
-                $response = $provider->api()->profile( 'id='.$user_profile->identifier.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
+                //$response = $provider->api()->profile( 'id='.$user_profile->identifier.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
+                $response = $provider->api()->profile( 'id=mwaHFaow9x:(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
+
                 $aUserInfo = $linkedin->getUsersValues(json_decode($response['linkedin']));
                 $harvestSourceFriendGUID = $user_profile->identifier;
-//print_r(json_decode($response['linkedin']));
+print_r(json_decode($response['linkedin']));
 //print_r($aUserInfo);
-
+exit;
                 // Save This into the graph database.
                 $graphModel = new \AlgorithmsIO\GraphModels\Linkedin();
                 $graphModel->setValues($aUserInfo);

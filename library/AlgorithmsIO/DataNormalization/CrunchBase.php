@@ -25,7 +25,7 @@ namespace AlgorithmsIO\DataNormalization{
 		//
 		private $keys = array('source_uid',
 							'person',
-							'other_handles',
+							//'other_handles',
 							'data_meta_data', // Data about this data, created, update, etc
 							'educations',
 							'employments'
@@ -80,6 +80,7 @@ namespace AlgorithmsIO\DataNormalization{
 			$dataArray['tag_list'] = $this->value_tag_list($aUser);
 			$dataArray['alias_list'] = $this->value_alias_list($aUser);
 			$dataArray['image_url'] = $this->value_image_url($aUser);
+                        $dataArray['twitter_username'] = $this->value_twitter_username($aUser);
 			
 			return $dataArray;
 		}

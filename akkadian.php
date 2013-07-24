@@ -2,10 +2,21 @@
 /**
  * Importing Akkadian data from the MySQL DB into the Graph DB
  * 
+ * This script pulls information out of the db holding Akkadians data and puts it
+ * into the Graph model for insertion.
+ * 
+ * This one script is setup to pull data and insert on:
+ * -company_identity
+ * -ratings
+ * -revenues
+ * 
+ * 
+ * 
+ * 
  */
 ini_set('error_reporting', E_ALL);
 ini_set('memory_limit', '512M');
-ini_set('max_execution_time', 6000);
+ini_set('max_execution_time', 60000);
 
 // MySQL DB
 include('library/AlgorithmsIO/Utilities/MySQL.php');
@@ -37,8 +48,12 @@ $graphModel = new \AlgorithmsIO\GraphModels\AkkadianCompany();
     $mySQLConnection = $mySQL->getConnection();
     
     // Getting Company Information
-    $start = 1117;
-    $end = 99999999;
+    $start = 21099;
+    $end = 10;
+    
+    $output_file = "/opt/logs/akkadian/adding_akkadian_company_start_".$start.".txt";
+    
+    
     $sql  = "SELECT idCompany, cbPermalink, name, website, founded, computedTotalRaised, city, state, countryCode, twitterUserName, cbCategory, cbTags, alid, alQuality, alType, alMarkets, status, companyType  FROM company_identity ORDER BY idCompany ASC  limit ".$start.", ".$end;
  
     // Getting Rating Information
@@ -65,8 +80,8 @@ $graphModel = new \AlgorithmsIO\GraphModels\AkkadianCompany();
 
             //if($n>10)
             //    break;
-            system("echo '".$n.") ".$row['idCompany'] . ' - '. $row['cbPermalink']."' >> /opt/adding.txt");
-            
+            system("echo '".$n.") ".$row['idCompany'] . ' - '. $row['cbPermalink']."' >> ".$output_file);
+       
             $n++;
         }
         

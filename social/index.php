@@ -1,4 +1,9 @@
 <?php
+/**
+ * This shows the login button for a user to Oauth into LinkedIn
+ * 
+ */
+
 $realm = 'social.signiavc.com';
 //user => password
 $users = array('guest' => 'signia');
