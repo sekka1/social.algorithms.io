@@ -43,9 +43,9 @@ $graphModel = new \AlgorithmsIO\GraphModels\AkkadianCompany();
     // Get data from MySQL
     $mysql = new \AlgorithmsIO\Utilities\MySQL();
     $mysql->setConnection('localhost', null, 'akkadian', 'akkadian1298');
-    $mySQL->setDatabaseName('akkadian');
-    $mySQL->connect();
-    $mySQLConnection = $mySQL->getConnection();
+    $mysql->setDatabaseName('akkadian');
+    $mysql->connect();
+    $mySQLConnection = $mysql->getConnection();
     
     // Getting Company Information
     $start = 21099;

@@ -7,12 +7,14 @@
  * Input to this script is a file with each line as a person and the json output
  * of the API call.
  * 
+ * The first entry in the input file should have all the fields for the header.
+ * 
  */
 ini_set('memory_limit','2024M');
-include_once('library/AlgorithmsIO/Node/Import/AngelListUser.php');
+include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
 ini_set('max_execution_time', 6000);
 
-$createCSV = new CreateCSVImport("/tmp/users.txt");
+$createCSV = new CreateCSVImport("/opt/logs/crunchbase/users_072612.txt");
 $createCSV->create();
 $createCSV->output();
 
@@ -23,10 +25,10 @@ class CreateCSVImport{
     private $headers;
     private $didGetHeaders;
     
-    private $users;
+    private $importNodes;
     
-    private $outputNodeFile = '/tmp/node.csv';
-    private $outputRelationshipFile = '/tmp/relationship.csv';
+    private $outputNodeFile = '/tmp/node_crunchbase_user.csv';
+    private $outputRelationshipFile = '/tmp/relationship_crunchbase_user.csv';
     private $outputNodeFileHandle;
     private $outputRelationshipFileHandle;
     
@@ -36,7 +38,7 @@ class CreateCSVImport{
         $this->didGetHeaders = false;
         $this->headers = array();
         
-        $this->users = new \AlgorithmsIO\Node\Import\AngelListUser();
+        $this->importNodes = new \AlgorithmsIO\Node\Import\Crunchbaseuser();
         
         $this->outputNodeFileHandle = fopen($this->outputNodeFile, 'w');
         $this->outputRelationshipFileHandle = fopen($this->outputRelationshipFile, 'w');
@@ -61,16 +63,16 @@ class CreateCSVImport{
                     $this->addAdditionalHeaders();
                     $this->setHeaders($line);
                     $this->didGetHeaders=true;
-                    $this->users->setHeader($this->headers);
+                    $this->importNodes->setHeader($this->headers);
                 }
                 
 //print_r($this->headers);
 
-                $this->users->add($line);
-                
+                $this->importNodes->add($line);
+//exit;                
                 //if($n==4)
                 //    break;
-                $n++;
+                //$n++;
             }
             if (!feof($handle)) {
                 echo "Error: unexpected fgets() fail\n";
@@ -100,10 +102,14 @@ class CreateCSVImport{
      * These are headers we are adding in to augment what is not retrieved from
      * the api and adding the label so that we can upgrade the db to Neo4j 2.x 
      * and then apply these labels to the nodes.
+     * 
+     * And basically additional info or param names that we want to add in that is
+     * not in the data arrays coming in.
      */
     private function addAdditionalHeaders(){
         array_push($this->headers, 'node_db_label');
         array_push($this->headers, 'datasource_name');
+        array_push($this->headers, 'value');
     }
     /**
      * Foreach person that was taking in and produced, it will output the nodes
@@ -111,8 +117,8 @@ class CreateCSVImport{
      */
     public function output(){
         
-        $allNodes = $this->users->getAllNodes('angelList');
-        $allRels = $this->users->getAllRelationships('angelList');
+        $allNodes = $this->importNodes->getAllNodes('crunchbase');
+        $allRels = $this->importNodes->getAllRelationships('crunchbase');
      
         $this->outputNodeHeaders();
         

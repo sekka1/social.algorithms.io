@@ -42,8 +42,8 @@ namespace AlgorithmsIO\Utilities{
          * @return boolean
          */
         public function connect(){
-            //$this->mysqlConnection = new \mysqli($this->mysqlHost, $this->mysqlUser, $this->mysqlPassword, $this->databaseName);
-            $this->mysqlConnection = new \mysqli('localhost', 'akkadian', 'akkadian1298', 'akkadian');
+            $this->mysqlConnection = new \mysqli($this->mysqlHost, $this->mysqlUser, $this->mysqlPassword, $this->databaseName);
+            //$this->mysqlConnection = new \mysqli('localhost', 'akkadian', 'akkadian1298', 'akkadian');
             if (!$this->mysqlConnection) {
                 die('Could not connect: ' . mysql_error());
             }
@@ -57,6 +57,15 @@ namespace AlgorithmsIO\Utilities{
          */
         public function closeConnection(){
             mysqli_close($this->mysqlConnection);
+        }
+        /**
+         * Escapes safely for sql
+         * 
+         * @param string $string
+         * @return string
+         */
+        public function real_escape_string($string){
+            return $this->mysqlConnection->real_escape_string($string);
         }
     }
 }

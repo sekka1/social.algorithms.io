@@ -70,7 +70,7 @@ return
 			),
 			"AngelList" => array (
 				"enabled" => true,
-				"keys"    => array ( "access_token" => "3d3b8729cee531333ecfc741a5d4aecd" ) 
+				"keys"    => array ( "access_token" => "a30bf2b31fbbc6fc25d77f7fd73b1603" ) 
 			)
 		),
 
