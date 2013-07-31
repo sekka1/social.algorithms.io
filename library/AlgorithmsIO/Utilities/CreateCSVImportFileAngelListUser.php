@@ -7,6 +7,12 @@
  * Input to this script is a file with each line as a person and the json output
  * of the API call.
  * 
+ * * Testing:
+ * php library/AlgorithmsIO/Utilities/CreateCSVImportFileAngelListUser.php
+ * 
+ * Running full for all ~100k users
+ * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileAngelListUser.php&
+ * 
  */
 ini_set('memory_limit','2024M');
 include_once('library/AlgorithmsIO/Node/Import/AngelListUser.php');

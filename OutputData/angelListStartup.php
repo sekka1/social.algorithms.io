@@ -9,6 +9,10 @@
  * Foreach person it is going to call the "roles" endpoint to get roles this person
  * has been in.
  * 
+ * Usage:
+ * HTTP: http://social.signiavc.com/OutputData/angelListStartup.php
+ * 
+ * 
  */
 
 ini_set('error_reporting', E_ALL);
@@ -18,12 +22,12 @@ ini_set('max_execution_time', 60000);
 $outputFileLocation = '/opt/logs/angelsList/';
 
 // Hybrid config and includes
-$config = 'library/hybridauth/hybridauth/config.php';
-require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
-require_once("library/AlgorithmsIO/Utilities/OutputData.php");
+$config = '../library/hybridauth/hybridauth/config.php';
+require_once( "../library/hybridauth/hybridauth/Hybrid/Auth.php" );
+require_once("../library/AlgorithmsIO/Utilities/OutputData.php");
 
 // Data Normalization
-include('library/AlgorithmsIO/DataNormalization/AngelListStartup.php');
+include('../library/AlgorithmsIO/DataNormalization/AngelListStartup.php');
 
 
 // Redirect for Oauth
@@ -58,22 +62,21 @@ for($i=$start_number;$i<$stop_number;$i++){
     //$i=1072;
     
     // Get data from provider.  Batch of users
-    $items = $provider->get('users/startups?ids='.  getBatchNumbers($batchFetchAmount, $i));
+    $items = $provider->get('startups/batch?ids='.  getBatchNumbers($batchFetchAmount, $i));
     //$i += $batchFetchAmount;
-    
+
     // Process Items - a startup
     $itemsArray = json_decode($items['angellist']);
 
     foreach($itemsArray as $anItem){
-        $normalizedItem = $normalize->getUsersValues($anItem);
- print_r($normalizedItem);
+        
+        $normalizedItem = $normalize->getValues($anItem);
+ //print_r($normalizedItem);
  
- exit;
         // Save data
-        $normalizedItem['roles'] = $normalizedRole['startup_roles'];
         $out_angelListCompany->out(json_encode($normalizedItem)."\n");
     
-        //if($i==2000)
+        //if($i==4)
         //    exit;
         
         $i++;
@@ -96,6 +99,7 @@ function getBatchNumbers($numberOfResults, $startNumber){
         $string .= $startNumber.',';
         $startNumber++;
     }
+    echo $string;
     return $string;
 }
 

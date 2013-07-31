@@ -24,7 +24,11 @@ namespace AlgorithmsIO\DataNormalization{
 		// before returning the value.
 		//
 		private $keys = array('source_uid',
-                                        'company'
+                                        'company',
+                                        'markets',
+                                        'locations',
+                                        'company_type',
+                                        'fundraising'
                                     );
 		
 		public function __construct(){}
@@ -96,6 +100,12 @@ namespace AlgorithmsIO\DataNormalization{
                 private function get_angellist_url($data){
 			if(isset($data->angellist_url))
 				return $this->pruneValue($data->angellist_url);
+			else
+				return null;
+		}
+                private function get_logo_url($data){
+			if(isset($data->logo_url))
+				return $this->pruneValue($data->logo_url);
 			else
 				return null;
 		}
@@ -183,6 +193,241 @@ namespace AlgorithmsIO\DataNormalization{
 			else
 				return null;
 		}
+                
+                
+                
+                
+                
+                /**
+                 * Getting market(s) values
+                 * 
+                 * @param type $data
+                 * @return array
+                 */
+                private function value_markets($data){
+                    $dataArray = array();
+                    if(isset($data->markets)){
+                        foreach($data->markets as $anItem){
+                            $temp['id'] = $this->value_markets_id($anItem);
+                            $temp['tag_type'] = $this->value_markets_tag_type($anItem);
+                            $temp['name'] = $this->value_markets_name($anItem);
+                            $temp['display_name'] = $this->value_markets_display_name($anItem);
+                            $temp['angellist_url'] = $this->value_markets_angellist_url($anItem);
+                            array_push($dataArray,$temp);
+                        }
+                    }
+                    return $dataArray;
+                }
+                private function value_markets_id($data){
+			if(isset($data->id))
+				return $this->pruneValue($data->id);
+			else
+				return null;
+		}
+                private function value_markets_tag_type($data){
+			if(isset($data->tag_type))
+				return $this->pruneValue($data->tag_type);
+			else
+				return null;
+		}
+                private function value_markets_name($data){
+			if(isset($data->name))
+				return $this->pruneValue($data->name);
+			else
+				return null;
+		}
+                private function value_markets_display_name($data){
+			if(isset($data->display_name))
+				return $this->pruneValue($data->display_name);
+			else
+				return null;
+		}
+                private function value_markets_angellist_url($data){
+			if(isset($data->angellist_url))
+				return $this->pruneValue($data->angellist_url);
+			else
+				return null;
+		}
+                
+                
+                
+                
+                
+                /**
+                 * Getting locations(s) values
+                 * 
+                 * @param type $data
+                 * @return array
+                 */
+                private function value_locations($data){
+                    $dataArray = array();
+                    if(isset($data->locations)){
+                        foreach($data->locations as $anItem){
+                            $temp['id'] = $this->value_locations_id($anItem);
+                            $temp['tag_type'] = $this->value_locations_tag_type($anItem);
+                            $temp['name'] = $this->value_locations_name($anItem);
+                            $temp['display_name'] = $this->value_locations_display_name($anItem);
+                            $temp['angellist_url'] = $this->value_locations_angellist_url($anItem);
+                            array_push($dataArray,$temp);
+                        }
+                    }
+                    return $dataArray;
+                }
+                private function value_locations_id($data){
+			if(isset($data->id))
+				return $this->pruneValue($data->id);
+			else
+				return null;
+		}
+                private function value_locations_tag_type($data){
+			if(isset($data->tag_type))
+				return $this->pruneValue($data->tag_type);
+			else
+				return null;
+		}
+                private function value_locations_name($data){
+			if(isset($data->name))
+				return $this->pruneValue($data->name);
+			else
+				return null;
+		}
+                private function value_locations_display_name($data){
+			if(isset($data->display_name))
+				return $this->pruneValue($data->display_name);
+			else
+				return null;
+		}
+                private function value_locations_angellist_url($data){
+			if(isset($data->angellist_url))
+				return $this->pruneValue($data->angellist_url);
+			else
+				return null;
+		}
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                /**
+                 * Getting company_type values
+                 * 
+                 * @param type $data
+                 * @return array
+                 */
+                private function value_company_type($data){
+                    $dataArray = array();
+                    if(isset($data->company_type)){
+                        foreach($data->company_type as $anItem){
+                            $temp['id'] = $this->value_company_type_id($anItem);
+                            $temp['tag_type'] = $this->value_company_type_tag_type($anItem);
+                            $temp['name'] = $this->value_company_type_name($anItem);
+                            $temp['display_name'] = $this->value_company_type_display_name($anItem);
+                            $temp['angellist_url'] = $this->value_company_type_angellist_url($anItem);
+                            array_push($dataArray,$temp);
+                        }
+                    }
+                    return $dataArray;
+                }
+                private function value_company_type_id($data){
+			if(isset($data->id))
+				return $this->pruneValue($data->id);
+			else
+				return null;
+		}
+                private function value_company_type_tag_type($data){
+			if(isset($data->tag_type))
+				return $this->pruneValue($data->tag_type);
+			else
+				return null;
+		}
+                private function value_company_type_name($data){
+			if(isset($data->name))
+				return $this->pruneValue($data->name);
+			else
+				return null;
+		}
+                private function value_company_type_display_name($data){
+			if(isset($data->display_name))
+				return $this->pruneValue($data->display_name);
+			else
+				return null;
+		}
+                private function value_company_type_angellist_url($data){
+			if(isset($data->angellist_url))
+				return $this->pruneValue($data->angellist_url);
+			else
+				return null;
+		}
+                
+                
+                
+                
+                
+                
+               /**
+                 * fundraising data
+                * 
+                * Not sure why this isnt an array
+                 * 
+                 * @param type $data
+                 * @return type
+                 */
+                private function value_fundraising($data){
+                    $dataArray = array();
+                    if(isset($data->fundraising)){
+                        $dataArray['round_opened_at'] = $this->value_fundraising_round_opened_at($data->fundraising);
+                        $dataArray['raising_amount'] = $this->value_fundraising_raising_amount($data->fundraising);
+                        $dataArray['pre_money_valuation'] = $this->value_fundraising_pre_money_valuation($data->fundraising);
+                        $dataArray['equity_basis'] = $this->value_fundraising_equity_basis($data->fundraising);
+                        $dataArray['updated_at'] = $this->value_fundraising_updated_at($data->fundraising);
+                        $dataArray['raised_amount'] = $this->value_fundraising_raised_amount($data->fundraising);
+                    }
+                    return $dataArray;
+                }
+                private function value_fundraising_round_opened_at($data){
+			if(isset($data->round_opened_at))
+				return $this->pruneValue($data->round_opened_at);
+			else
+				return null;
+		} 
+                private function value_fundraising_raising_amount($data){
+			if(isset($data->raising_amount))
+				return $this->pruneValue($data->raising_amount);
+			else
+				return null;
+		} 
+                private function value_fundraising_pre_money_valuation($data){
+			if(isset($data->pre_money_valuation))
+				return $this->pruneValue($data->pre_money_valuation);
+			else
+				return null;
+		} 
+                private function value_fundraising_equity_basis($data){
+			if(isset($data->equity_basis))
+				return $this->pruneValue($data->equity_basis);
+			else
+				return null;
+		} 
+                private function value_fundraising_updated_at($data){
+			if(isset($data->updated_at))
+				return $this->pruneValue($data->updated_at);
+			else
+				return null;
+		} 
+                private function value_fundraising_raised_amount($data){
+			if(isset($data->raised_amount))
+				return $this->pruneValue($data->raised_amount);
+			else
+				return null;
+		} 
+                
+                
+                
                 
                 
                 

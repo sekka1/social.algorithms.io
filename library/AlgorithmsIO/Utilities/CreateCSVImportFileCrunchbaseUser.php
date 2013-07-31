@@ -9,6 +9,16 @@
  * 
  * The first entry in the input file should have all the fields for the header.
  * 
+ * Usage:
+ * -best to run on the command line
+ * 
+ * Testing:
+ * php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php
+ * 
+ * Running full for all ~100k users
+ * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php &
+ * 
+ * 
  */
 ini_set('memory_limit','2024M');
 include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
