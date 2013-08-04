@@ -56,9 +56,8 @@ namespace AlgorithmsIO\Node\Import{
         protected function addNode($guid, $json){
             
             // Check if GUID is in table already
-            $inTableRowNumber = $this->isNodeInTable($guid);
-            if($inTableRowNumber>0)
-                return $inTableRowNumber;
+            if($this->isNodeInTable($guid))
+                return true;
             
             $sql = "INSERT INTO ".$this->tableNameNode." VALUES('".$this->datasource_name."',".$this->rowNumber.", '".$guid."', '".$this->mysql->real_escape_string($json)."')";
             
@@ -84,14 +83,14 @@ namespace AlgorithmsIO\Node\Import{
         protected function updateNode($guid, $json){
 
             // Check if GUID is in table already
-            $inTableRowNumber = $this->isNodeInTable($guid);
-            if($inTableRowNumber>0){
+            if($this->isNodeInTable($guid)){
             
                 $sql = "update ".$this->tableNameNode." set json='".$this->mysql->real_escape_string($json)."' where datasource_name='".$this->datasource_name."' AND nodeGUID='".$guid."'";
 
                 if($result = $this->mysql->getConnection()->query($sql)){
                     $this->rowNumber++;
-                    return $inTableRowNumber;
+                    $obj = $result->fetch_object();
+                    return $obj->rowNumber;
                 }else{
                     echo $sql;
                     exit;
@@ -105,17 +104,17 @@ namespace AlgorithmsIO\Node\Import{
         }
         /**
          * 
-         * @param int $end_rowNumber
-         * @param int $end_rowNumber
-         * @param string $relationship_name
+         * @param type $start_guid
+         * @param type $end_guid
+         * @param type $relationship_name
          * @return bool
          */
-        protected function addReltionship($start_rowNumber, $end_rowNumber, $relationship_name){
+        protected function addReltionship($start_guid, $end_guid, $relationship_name){
             
-            if($this->relationshipExist($start_rowNumber, $end_rowNumber, $relationship_name))
+            if($this->relationshipExist($start_guid, $end_guid, $relationship_name))
                 return true;
             
-            $sql = "INSERT INTO ".$this->tableNameRels." VALUES('".$this->datasource_name."', ".$start_rowNumber.",".$end_rowNumber.",'".$this->mysql->real_escape_string($relationship_name)."')";
+            $sql = "INSERT INTO ".$this->tableNameRels." VALUES('".$this->datasource_name."', ".$this->getRowNumberByGUID($start_guid).",".$this->getRowNumberByGUID($end_guid).",'".$this->mysql->real_escape_string($relationship_name)."')";
             $result = $this->mysql->getConnection()->query($sql);            
             return true;
         }
@@ -123,18 +122,17 @@ namespace AlgorithmsIO\Node\Import{
          * Checks whether the guid passed in is in the table already
          * 
          * @param type $guid
-         * @return int -either the rowNumber if it was found or -1 if not found
+         * @return bool
          */
         private function isNodeInTable($guid){         
             $sql = "SELECT * FROM ".$this->tableNameNode." WHERE datasource_name='".$this->datasource_name."' AND nodeGUID='".$guid."'";
          
             if($result = $this->mysql->getConnection()->query($sql)){
                 if($result->num_rows>0){
-                    $obj = $result->fetch_object();
-                    return $obj->rowNumber;
+                    return true;
                 }
                 else
-                    return -1;
+                    return false;
             }else{
                 echo "failed sql";
                 return false;
@@ -162,13 +160,13 @@ namespace AlgorithmsIO\Node\Import{
         /**
          * Checks if a relationship exist already or not
          * 
-         * @param int $start_rowNumber
-         * @param int $end_rowNumber
+         * @param int $start_guid
+         * @param int $end_guid
          * @param string $relationship_name
          * @return bool
          */
-        private function relationshipExist($start_rowNumber, $end_rowNumber, $relationship_name){            
-            $sql = "SELECT * FROM zz_relationship_db_import_table_not_akkadian_stuff WHERE datasource_name='".$this->datasource_name."' AND start=".$start_rowNumber." AND end=".$end_rowNumber." AND type='".$relationship_name."'";
+        private function relationshipExist($start_guid, $end_guid, $relationship_name){            
+            $sql = "SELECT * FROM zz_relationship_db_import_table_not_akkadian_stuff WHERE datasource_name='".$this->datasource_name."' AND start=".$this->getRowNumberByGUID($start_guid)." AND end=".$this->getRowNumberByGUID($end_guid)." AND type='".$relationship_name."'";
             $result = $this->mysql->getConnection()->query($sql);
 
             if($result = $this->mysql->getConnection()->query($sql)){

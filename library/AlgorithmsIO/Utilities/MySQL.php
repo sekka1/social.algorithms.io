@@ -42,7 +42,7 @@ namespace AlgorithmsIO\Utilities{
          * @return boolean
          */
         public function connect(){
-            $this->mysqlConnection = new \mysqli($this->mysqlHost, $this->mysqlUser, $this->mysqlPassword, $this->databaseName);
+            $this->mysqlConnection = new \mysqli($this->mysqlHost, $this->mysqlUser, $this->mysqlPassword, $this->databaseName, $this->mysqlPort);
             //$this->mysqlConnection = new \mysqli('localhost', 'akkadian', 'akkadian1298', 'akkadian');
             if (!$this->mysqlConnection) {
                 die('Could not connect: ' . mysql_error());

@@ -49,9 +49,9 @@ namespace AlgorithmsIO\Node\Import{
             if(!isset($this->userArray['person']))
                 return $this->allNodes;
 
-            $nodeId = $this->setPersonNodes();
-            $this->setEducationNodes($nodeId);
-            $this->setEmploymentNodes($nodeId);
+            $this->setPersonNodes();
+            $this->setEducationNodes();
+            $this->setEmploymentNodes();
             
         }
         
@@ -98,7 +98,7 @@ namespace AlgorithmsIO\Node\Import{
          *                                      -[AWARDED]->Degree type
          * 
          */
-        private function setEducationNodes($pseronNodeId){
+        private function setEducationNodes(){
             
             $counter = 0; // For unique guid for an education
             
@@ -114,19 +114,19 @@ namespace AlgorithmsIO\Node\Import{
                 // Since an education has no guid with this data we are going to make one
                 $edu_guid = $this->userArray['source_uid'].'_education_'.$counter;
                 $counter++;
-                $eduNodeId = $this->addNode($edu_guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
-                $this->addReltionship($pseronNodeId, $eduNodeId, 'HAS_EDUCATION');
+                $this->addNode($edu_guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
+                $this->addReltionship($this->userArray['source_uid'], $edu_guid, 'HAS_EDUCATION');
                 
                 
                 // Institute Node
                 $institue = array('node_db_label'=>'Institution','value'=>$temp['institution']);
-                $institutionNodeId = $this->addNode($temp['institution'], json_encode($this->fillOutDataWithAllHeaders($institue)));
-                $this->addReltionship($eduNodeId, $institutionNodeId, 'ATTENDED');
+                $this->addNode($temp['institution'], json_encode($this->fillOutDataWithAllHeaders($institue)));
+                $this->addReltionship($edu_guid, $temp['institution'], 'ATTENDED');
                  
                 // Degree Node
                 $degree = array('node_db_label'=>'Degree','value'=>$temp['type']);
-                $degreeNodeId = $this->addNode($temp['type'], json_encode($this->fillOutDataWithAllHeaders($degree)));
-                $this->addReltionship($eduNodeId, $degreeNodeId, 'AWARDED');
+                $this->addNode($temp['type'], json_encode($this->fillOutDataWithAllHeaders($degree)));
+                $this->addReltionship($edu_guid, $temp['type'], 'AWARDED');
             }
         }
         
@@ -138,7 +138,7 @@ namespace AlgorithmsIO\Node\Import{
          *                                                  -[:HAS_EMPLOYMENT_FIRM]->EmploymentFirm:employmentFirm
          * 
          */
-        private function setEmploymentNodes($pseronNodeId){
+        private function setEmploymentNodes(){
             
             $counter = 0; // For unique guid for an education
             
@@ -154,18 +154,18 @@ namespace AlgorithmsIO\Node\Import{
                 // Add employment main node
                 $guid = $this->userArray['source_uid'].'_employment_'.$counter;
                 $counter++;
-                $employmentNodeId = $this->addNode($guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
-                $this->addReltionship($pseronNodeId, $employmentNodeId, 'HAS_EMPLOYMENT');
+                $this->addNode($guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
+                $this->addReltionship($this->userArray['source_uid'], $guid, 'HAS_EMPLOYMENT');
 
                 // EmploymentTitle
                 $title = array('node_db_label'=>'EmploymentTitle','value'=>$temp['title']);
-                $titleNodeId = $this->addNode($temp['title'], json_encode($this->fillOutDataWithAllHeaders($title)));
-                $this->addReltionship($employmentNodeId, $titleNodeId, 'HAS_EMPLOYMENT_TITLE');
+                $this->addNode($temp['title'], json_encode($this->fillOutDataWithAllHeaders($title)));
+                $this->addReltionship($guid, $temp['title'], 'HAS_EMPLOYMENT_TITLE');
 
                 // EmploymentFirm
                 $firm = array('node_db_label'=>'EmploymentFirm','value'=>$temp['firm_permalink']);
-                $firmNodeId = $this->addNode($temp['firm_name'], json_encode($this->fillOutDataWithAllHeaders($firm)));
-                $this->addReltionship($employmentNodeId, $firmNodeId, 'HAS_EMPLOYMENT_FIRM');                
+                $this->addNode($temp['firm_name'], json_encode($this->fillOutDataWithAllHeaders($firm)));
+                $this->addReltionship($guid, $temp['title'], 'HAS_EMPLOYMENT_FIRM');                
             }
         }
         

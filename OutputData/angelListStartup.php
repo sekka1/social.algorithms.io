@@ -43,7 +43,7 @@ $out_angelListCompany = new \AlgorithmsIO\Utilities\OutputData($outputFileLocati
 
 
 
-$start_number = 1;
+$start_number = 242278;
 $stop_number = 999999;
 $batchFetchAmount = 50;
 //$log_file = '/opt/logs/crunchbaseCompany/adding_angelList_people_start_'.$start_number.'k.txt';
@@ -71,8 +71,7 @@ for($i=$start_number;$i<$stop_number;$i++){
     foreach($itemsArray as $anItem){
         
         $normalizedItem = $normalize->getValues($anItem);
- //print_r($normalizedItem);
- 
+
         // Save data
         $out_angelListCompany->out(json_encode($normalizedItem)."\n");
     

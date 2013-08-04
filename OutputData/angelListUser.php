@@ -18,16 +18,16 @@ ini_set('max_execution_time', 60000);
 $outputFileLocation = '/opt/logs/angelsList/';
 
 // Hybrid config and includes
-$config = 'library/hybridauth/hybridauth/config.php';
-require_once( "library/hybridauth/hybridauth/Hybrid/Auth.php" );
-require_once("library/AlgorithmsIO/Utilities/OutputData.php");
+$config = '../library/hybridauth/hybridauth/config.php';
+require_once( "../library/hybridauth/hybridauth/Hybrid/Auth.php" );
+require_once("../library/AlgorithmsIO/Utilities/OutputData.php");
 
 // Data Normalization
-include('library/AlgorithmsIO/DataNormalization/AngelListUser.php');
-include('library/AlgorithmsIO/DataNormalization/AngelListRole.php');
+include('../library/AlgorithmsIO/DataNormalization/AngelListUser.php');
+include('../library/AlgorithmsIO/DataNormalization/AngelListRole.php');
 // Graph DB
-include('library/AlgorithmsIO/GraphModels/AngelListUser.php');
-include('library/AlgorithmsIO/GraphModels/AngelListRole.php');
+//include('library/AlgorithmsIO/GraphModels/AngelListUser.php');
+//include('library/AlgorithmsIO/GraphModels/AngelListRole.php');
 
 // Redirect for Oauth
 //header('Location: https://angel.co/api/oauth/authorize?client_id=5f3f3c589e8ad4dac60ce4bb0ccd93cf&response_type=code');
@@ -37,8 +37,8 @@ $normalize = new \AlgorithmsIO\DataNormalization\AngelListUser();
 $normalizeRole = new \AlgorithmsIO\DataNormalization\AngelListRole();
 
 // Graph
-$graphModelUser = new \AlgorithmsIO\GraphModels\AngelListUser();
-$graphModelRole = new \AlgorithmsIO\GraphModels\AngelListRole();
+//$graphModelUser = new \AlgorithmsIO\GraphModels\AngelListUser();
+//$graphModelRole = new \AlgorithmsIO\GraphModels\AngelListRole();
 
 // Saving data gathered from AngelList
 $out_angelListUser = new \AlgorithmsIO\Utilities\OutputData($outputFileLocation.'users.txt');
@@ -46,10 +46,10 @@ $out_angelListUser = new \AlgorithmsIO\Utilities\OutputData($outputFileLocation.
 
 
 
-$start_number = 1000;
+$start_number = 351870;
 $stop_number = 999999;
 $batchFetchAmount = 50;
-$log_file = '/opt/logs/crunchbaseCompany/adding_angelList_people_start_'.$start_number.'k.txt';
+//$log_file = '/opt/logs/crunchbaseCompany/adding_angelList_people_start_'.$start_number.'k.txt';
 
 
 // hybridauth EP

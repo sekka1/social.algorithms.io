@@ -16,16 +16,16 @@
  * php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php
  * 
  * Running full for all ~100k users
- * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php &
+ * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseCompany.php &
  * 
  * 
  */
 ini_set('memory_limit','4024M');
-include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
+include_once('library/AlgorithmsIO/Node/Import/CrunchbaseCompany.php');
 ini_set('max_execution_time', 6000);
 
 //$createCSV = new CreateCSVImport("/opt/logs/crunchbase/users_072612.txt");
-$createCSV = new CreateCSVImport("/Users/gkan/Downloads/crunchbase_users_072612.txt");
+$createCSV = new CreateCSVImport("/Users/gkan/Downloads/crunchbase_companies_073013.txt");
 $createCSV->create();
 $createCSV->output();
 
@@ -38,8 +38,8 @@ class CreateCSVImport{
     
     private $importNodes;
     
-    private $outputNodeFile = '/Users/gkan/Downloads/node_crunchbase_user.csv';
-    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_crunchbase_user.csv';
+    private $outputNodeFile = '/Users/gkan/Downloads/node_crunchbase_company.csv';
+    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_crunchbase_company.csv';
     private $outputNodeFileHandle;
     private $outputRelationshipFileHandle;
     
@@ -49,7 +49,7 @@ class CreateCSVImport{
         $this->didGetHeaders = false;
         $this->headers = array();
         
-        $this->importNodes = new \AlgorithmsIO\Node\Import\CrunchbaseUser();
+        $this->importNodes = new \AlgorithmsIO\Node\Import\CrunchbaseCompany();
         
         $this->outputNodeFileHandle = fopen($this->outputNodeFile, 'w');
         $this->outputRelationshipFileHandle = fopen($this->outputRelationshipFile, 'w');
@@ -78,11 +78,11 @@ class CreateCSVImport{
                 }
                 
 //print_r($this->headers);
-                //if($n>=0)
-                    $this->importNodes->add($line);
+
+                $this->importNodes->add($line);
                 
-                if($n==2)
-                    break;
+                //if($n==1)
+                //    break;
                 $n++;
             }
             if (!feof($handle)) {
@@ -100,7 +100,6 @@ class CreateCSVImport{
      * @param type $data
      */
     private function setHeaders($data){
-//        print_r($data);
         foreach($data as $key=>$val){
             if(is_array($val))
                 $this->setHeaders ($val);
