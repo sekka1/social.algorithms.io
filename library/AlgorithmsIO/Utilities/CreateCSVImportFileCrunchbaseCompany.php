@@ -25,7 +25,7 @@ include_once('library/AlgorithmsIO/Node/Import/CrunchbaseCompany.php');
 ini_set('max_execution_time', 6000);
 
 //$createCSV = new CreateCSVImport("/opt/logs/crunchbase/users_072612.txt");
-$createCSV = new CreateCSVImport("/Users/gkan/Downloads/crunchbase_companies_073013.txt");
+$createCSV = new CreateCSVImport("/Users/gkan/Downloads/neo4j-stuff/crunchbase_companies_073013.txt");
 $createCSV->create();
 $createCSV->output();
 
@@ -66,7 +66,7 @@ class CreateCSVImport{
         if ($handle) {
             
             while (($buffer = fgets($handle, 8096)) !== false) {
-                //echo $buffer;
+//echo $buffer;
                 $line = json_decode($buffer, true);
 //print_r($line);
 
@@ -81,7 +81,7 @@ class CreateCSVImport{
 
                 $this->importNodes->add($line);
                 
-                //if($n==1)
+                //if($n==2)
                 //    break;
                 $n++;
             }

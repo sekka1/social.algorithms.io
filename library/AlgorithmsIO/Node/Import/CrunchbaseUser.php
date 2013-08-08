@@ -134,7 +134,7 @@ namespace AlgorithmsIO\Node\Import{
          * Employment Nodes
          * 
          * Structure:
-         * Person-[HAS_EMPLOYMEN]->Employment:employmentMain-[:HAS_EMPLOYMENT_TITLE]->EmploymentTitle:employmentTitle
+         * PersonGUID-[:HAS_EMPLOYMENT]->Employment:employmentMain-[:HAS_EMPLOYMENT_TITLE]->EmploymentTitle:employmentTitle
          *                                                  -[:HAS_EMPLOYMENT_FIRM]->EmploymentFirm:employmentFirm
          * 
          */
@@ -158,15 +158,29 @@ namespace AlgorithmsIO\Node\Import{
                 $this->addReltionship($pseronNodeId, $employmentNodeId, 'HAS_EMPLOYMENT');
 
                 // EmploymentTitle
-                $title = array('node_db_label'=>'EmploymentTitle','value'=>$temp['title']);
-                $titleNodeId = $this->addNode($temp['title'], json_encode($this->fillOutDataWithAllHeaders($title)));
+                $titleGUID = $this->setBlankValue($temp['title'], 'blank_title');
+                $title = array('node_db_label'=>'EmploymentTitle','value'=>$titleGUID);
+                $titleNodeId = $this->addNode($titleGUID, json_encode($this->fillOutDataWithAllHeaders($title)));
                 $this->addReltionship($employmentNodeId, $titleNodeId, 'HAS_EMPLOYMENT_TITLE');
 
                 // EmploymentFirm
                 $firm = array('node_db_label'=>'EmploymentFirm','value'=>$temp['firm_permalink']);
-                $firmNodeId = $this->addNode($temp['firm_name'], json_encode($this->fillOutDataWithAllHeaders($firm)));
+                $firmNodeId = $this->addNode($temp['firm_permalink'], json_encode($this->fillOutDataWithAllHeaders($firm)));
                 $this->addReltionship($employmentNodeId, $firmNodeId, 'HAS_EMPLOYMENT_FIRM');                
             }
+        }
+        /**
+         * Checks if a value is blank.  If so, it lets the you set it to whatever
+         * you want else it just returns the original value;
+         * 
+         * @param string $value
+         * @param string $setTo
+         * @return string
+         */
+        private function setBlankValue($value, $setTo){
+            if($value=='')
+                $value = $setTo;
+            return $value;
         }
         
         

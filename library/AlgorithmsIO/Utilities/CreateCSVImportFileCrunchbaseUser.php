@@ -100,7 +100,6 @@ class CreateCSVImport{
      * @param type $data
      */
     private function setHeaders($data){
-//        print_r($data);
         foreach($data as $key=>$val){
             if(is_array($val))
                 $this->setHeaders ($val);

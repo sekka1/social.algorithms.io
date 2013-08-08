@@ -71,8 +71,10 @@ namespace AlgorithmsIO\Node\Import{
             $nodeArray = array();
 
             $nodeArray['node_db_label'] = 'EmploymentFirm';
+            $employmentFirmGUID = $this->setBlankValue($this->userArray['source_uid'], 'blank_employmentFirm');
             $nodeArray['datasource_name'] = $this->datasource_name;
-            $nodeArray['source_uid'] = $this->userArray['source_uid'];
+            $nodeArray['source_uid'] = $employmentFirmGUID;
+            $nodeArray['value'] = $employmentFirmGUID;
             
             foreach($this->userArray['company'] as $key=>$val){
                 $nodeArray[$key] = $val;
@@ -80,8 +82,8 @@ namespace AlgorithmsIO\Node\Import{
             foreach($this->userArray['data_meta_data'] as $key=>$val){
                 $nodeArray[$key] = $val;
             }
-          
-            $nodeId = $this->updateNode($nodeArray['source_uid'], json_encode($this->fillOutDataWithAllHeaders($nodeArray)));
+
+            $nodeId = $this->updateNode($employmentFirmGUID, json_encode($this->fillOutDataWithAllHeaders($nodeArray)));
             
             return $nodeId;
         }
@@ -140,7 +142,19 @@ namespace AlgorithmsIO\Node\Import{
                 $this->addReltionship($parentGUID, $investorNodeId, 'HAS_INVESTOR');
             }
         }
-        
+        /**
+         * Checks if a value is blank.  If so, it lets the you set it to whatever
+         * you want else it just returns the original value;
+         * 
+         * @param string $value
+         * @param string $setTo
+         * @return string
+         */
+        private function setBlankValue($value, $setTo){
+            if($value=='')
+                $value = $setTo;
+            return $value;
+        }
         
         
         
