@@ -47,7 +47,7 @@ session_start();
                 //
                 echo "Thanks for signing in ". $user_profile->displayName;
                 echo "<br/><br/>Here is the data we are collecting: <br/>". $hybridauth_session_data;
-                //exit;               
+                exit;               
                 //
                 //
                 //
@@ -56,10 +56,8 @@ session_start();
                 
                 
                 
-                //
+
 		// access user profile data
-                //
-                /*
 		echo "You are connected with: <b>{$provider->id}</b><br />";
 		echo "As: <b>{$user_profile->displayName}</b><br />";
 		echo "And your provider user identifier is: <b>{$user_profile->identifier}</b><br />";  
@@ -70,7 +68,7 @@ session_start();
               
 		// Retrieves all the user's connections
 		$connections_list = $provider->api()->profile( '~/connections?format=json', 'get' );
-//print_r($connections_list);
+print_r($connections_list);
 
 		$connections_list_object = json_decode($connections_list['linkedin']);
                 
@@ -87,13 +85,8 @@ session_start();
                 $graphModel = new \AlgorithmsIO\GraphModels\Linkedin();
                 $graphModel->setValues($aUserInfo);
                 $graphModel->process();
-                 * 
-                 */
 
-                $response = $provider->api()->profile( 'id=1IkB7o2Df8:(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
-
-                print_r($response);
-                exit;
+                
                 
                 //
                 // Inserting Harvest Source's Friends
@@ -114,7 +107,16 @@ echo "\n\n\n\n Processing: ".$aConnection->id."\n\n\n\n";
 
          print_r(json_decode($aUser['linkedin']));
          
-
+ echo "zzzzzzzzzzz";                         
+                        // Save This into the graph database.
+                        $graphModel = new \AlgorithmsIO\GraphModels\Linkedin();
+                        $graphModel->setValues($aUserInfo);
+                        $graphModel->setHarvestSourceGUID($harvestSourceFriendGUID);
+                        $graphModel->isHarvestSourceFriend();
+                        $graphModel->process();
+                        
+  echo "\n\n\n\n\n\n\nxxxxxxxxxxxxxxxxxxxx\n\n\n\n\n\n";                      
+                        
 		}
 		
 		// Output all users info in a csv format
