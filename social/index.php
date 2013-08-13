@@ -1,9 +1,39 @@
 <?php
 /**
  * Main page for Signia's login page with LinkedIn Crawling
+ * 
+ * user:signia
+ * password: 545
  */
 
-$didLogin = $_GET["signedIn"];
+// HTTP Login
+/*
+$realm = 'social.signiavc.com';
+$users = array('signia' => '545');
+
+if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
+    header('HTTP/1.1 401 Unauthorized');
+    header('WWW-Authenticate: Digest realm="'.$realm.
+           '",qop="auth",nonce="'.uniqid().'",opaque="'.md5($realm).'"');
+    die('Please Login');
+}
+
+// analyze the PHP_AUTH_DIGEST variable
+if (!($data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) ||
+    !isset($users[$data['username']])){
+    unset($_SERVER['PHP_AUTH_DIGEST']);
+    die('Wrong Credentials!');
+    }
+*/
+
+
+
+// Oauthed in via LinkedIn
+$didLogin = false;
+if(isset($_GET["signedIn"]))
+    $didLogin = $_GET["signedIn"];
+
+
 
 ?>
 
@@ -285,3 +315,23 @@ $didLogin = $_GET["signedIn"];
 </html>
 
 
+<?php
+// function to parse the http auth header
+function http_digest_parse($txt)
+{
+    // protect against missing data
+    $needed_parts = array('nonce'=>1, 'nc'=>1, 'cnonce'=>1, 'qop'=>1, 'username'=>1, 'uri'=>1, 'response'=>1);
+    $data = array();
+    $keys = implode('|', array_keys($needed_parts));
+
+    preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
+
+    foreach ($matches as $m) {
+        $data[$m[1]] = $m[3] ? $m[3] : $m[4];
+        unset($needed_parts[$m[1]]);
+    }
+
+    return $needed_parts ? false : $data;
+}
+
+?>

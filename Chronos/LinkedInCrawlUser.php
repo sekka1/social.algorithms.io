@@ -9,6 +9,9 @@
  */
 //ini_set('error_reporting', E_ALL);
 
+// Set long time limit to run over days
+set_time_limit(604800);
+
 // Hybrid config and includes
 require_once("library/hybridauth/hybridauth/Hybrid/Auth.php");
 require_once("library/AlgorithmsIO/Utilities/OutputData.php");
@@ -49,6 +52,12 @@ class LinkedInCrawlUser{
         $linkedin = new \AlgorithmsIO\DataNormalization\LinkedIn();
 
         try{
+                // Save Session key also
+                $outputArray['hybridauth_session_key'] = $hybridauth_session_data;
+                
+                // Set crawl time
+                $outputArray['create_date'] = date("Y-m-d H:i:s");
+                        
                 // Setting up output array.
                 $outputArray['source_user'] = array();
                 $outputArray['friends'] = array();
@@ -59,13 +68,6 @@ class LinkedInCrawlUser{
                 // Restore session data
                 $hybridauth->restoreSessionData( $hybridauth_session_data );
                 $provider = $hybridauth->getAdapter("LinkedIn");
-
-                // 
-                // Can continue calling the provider as regular from this point on
-                // 
-
-                // return TRUE or False <= generally will be used to check if the user is connected to twitter before getting user profile, posting stuffs, etc..
-                //$is_user_logged_in = $provider->isUserConnected();
 
                 // get the user profile 
                 $user_profile = $provider->getUserProfile();
@@ -92,6 +94,13 @@ class LinkedInCrawlUser{
                         $n++;
                         //if($n>3)
                         //    break;
+                        
+                        // To avoid LinkedIn API Throtteling.  We are going to 
+                        // pause after 450 calls.  We are hitting the "Other's standard profiles"
+                        // 500 limit.  Setting to sleep at 450 just to be safe.  
+                        // https://developer.linkedin.com/documents/throttle-limits
+                        if($n==450)
+                            sleep(90000);
 
                         $response = $provider->api()->profile( 'id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
                         $aUserInfo = $linkedin->getUsersValues(json_decode($response['linkedin']));
