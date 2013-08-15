@@ -66,6 +66,8 @@ namespace AlgorithmsIO\Node\Import{
          * Additional details to this node is also set.
          * 
          * Will take the information in and place it in the $allNodes array
+         * 
+         * @return int ID of the node that was created for the Person
          */
         private function setPersonNodes(){
             $nodeArray = array();
@@ -96,6 +98,8 @@ namespace AlgorithmsIO\Node\Import{
          * Structure:
          * Person-[HAS_EDUCATION]->Education:EducationMain-[ATTENDED]->Institue
          *                                      -[AWARDED]->Degree type
+         * 
+         * @param int $pseronNodeId ID of the main person's node
          * 
          */
         private function setEducationNodes($pseronNodeId){
@@ -137,6 +141,7 @@ namespace AlgorithmsIO\Node\Import{
          * PersonGUID-[:HAS_EMPLOYMENT]->Employment:employmentMain-[:HAS_EMPLOYMENT_TITLE]->EmploymentTitle:employmentTitle
          *                                                  -[:HAS_EMPLOYMENT_FIRM]->EmploymentFirm:employmentFirm
          * 
+         * @param int $pseronNodeId ID of the main person's node
          */
         private function setEmploymentNodes($pseronNodeId){
             
@@ -177,11 +182,11 @@ namespace AlgorithmsIO\Node\Import{
          * @param string $setTo
          * @return string
          */
-        private function setBlankValue($value, $setTo){
-            if($value=='')
-                $value = $setTo;
-            return $value;
-        }
+        //private function setBlankValue($value, $setTo){
+        //    if($value=='')
+        //        $value = $setTo;
+        //    return $value;
+        //}
         
         
         

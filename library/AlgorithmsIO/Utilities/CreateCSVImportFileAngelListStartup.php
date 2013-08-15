@@ -7,25 +7,18 @@
  * Input to this script is a file with each line as a person and the json output
  * of the API call.
  * 
- * The first entry in the input file should have all the fields for the header.
- * 
- * Usage:
- * -best to run on the command line
- * 
- * Testing:
- * php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php
+ * * Testing:
+ * php library/AlgorithmsIO/Utilities/CreateCSVImportFileAngelListUser.php
  * 
  * Running full for all ~100k users
- * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php &
- * 
+ * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileAngelListUser.php&
  * 
  */
 ini_set('memory_limit','4024M');
-include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
+include_once('library/AlgorithmsIO/Node/Import/AngelListStartup.php');
 ini_set('max_execution_time', 6000);
 
-//$createCSV = new CreateCSVImport("/opt/logs/crunchbase/users_072612.txt");
-$createCSV = new CreateCSVImport("/Users/gkan/Downloads/neo4j-stuff/source_data/crunchbase_users_072612.txt");
+$createCSV = new CreateCSVImport("/Users/gkan/Downloads/neo4j-stuff/source_data/angellist_startups_080113.txt");
 $createCSV->create();
 $createCSV->output();
 
@@ -38,8 +31,8 @@ class CreateCSVImport{
     
     private $importNodes;
     
-    private $outputNodeFile = '/Users/gkan/Downloads/node_crunchbase_user.csv';
-    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_crunchbase_user.csv';
+    private $outputNodeFile = '/Users/gkan/Downloads/node_angellist_startup.csv';
+    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_angellist_startup.csv';
     private $outputNodeFileHandle;
     private $outputRelationshipFileHandle;
     
@@ -49,7 +42,7 @@ class CreateCSVImport{
         $this->didGetHeaders = false;
         $this->headers = array();
         
-        $this->importNodes = new \AlgorithmsIO\Node\Import\CrunchbaseUser();
+        $this->importNodes = new \AlgorithmsIO\Node\Import\AngelListStartup();
         
         $this->outputNodeFileHandle = fopen($this->outputNodeFile, 'w');
         $this->outputRelationshipFileHandle = fopen($this->outputRelationshipFile, 'w');
@@ -128,8 +121,8 @@ class CreateCSVImport{
      */
     public function output(){
         
-        $allNodes = $this->importNodes->getAllNodes('crunchbase');
-        $allRels = $this->importNodes->getAllRelationships('crunchbase');
+        $allNodes = $this->importNodes->getAllNodes('angelList');
+        $allRels = $this->importNodes->getAllRelationships('angelList');
      
         $this->outputNodeHeaders();
         

@@ -240,6 +240,19 @@ namespace AlgorithmsIO\Node\Import{
             }
             return $output;
         }
+        /**
+         * Checks if a value is blank.  If so, it lets the you set it to whatever
+         * you want else it just returns the original value;
+         * 
+         * @param string $value
+         * @param string $setTo
+         * @return string
+         */
+        protected function setBlankValue($value, $setTo){
+            if($value=='')
+                $value = $setTo;
+            return $value;
+        }
     }
 }
 ?>

@@ -150,11 +150,11 @@ namespace AlgorithmsIO\Node\Import{
          * @param string $setTo
          * @return string
          */
-        private function setBlankValue($value, $setTo){
-            if($value=='')
-                $value = $setTo;
-            return $value;
-        }
+        //private function setBlankValue($value, $setTo){
+        //    if($value=='')
+        //        $value = $setTo;
+        //    return $value;
+        //}
         
         
         

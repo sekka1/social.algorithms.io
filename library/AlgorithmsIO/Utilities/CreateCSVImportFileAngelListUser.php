@@ -18,7 +18,7 @@ ini_set('memory_limit','2024M');
 include_once('library/AlgorithmsIO/Node/Import/AngelListUser.php');
 ini_set('max_execution_time', 6000);
 
-$createCSV = new CreateCSVImport("/tmp/users.txt");
+$createCSV = new CreateCSVImport("/Users/gkan/Downloads/neo4j-stuff/source_data/angellist_users_080113.txt");
 $createCSV->create();
 $createCSV->output();
 
@@ -29,10 +29,10 @@ class CreateCSVImport{
     private $headers;
     private $didGetHeaders;
     
-    private $users;
+    private $importNodes;
     
-    private $outputNodeFile = '/tmp/node.csv';
-    private $outputRelationshipFile = '/tmp/relationship.csv';
+    private $outputNodeFile = '/Users/gkan/Downloads/node_angellist_user.csv';
+    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_angellist_user.csv';
     private $outputNodeFileHandle;
     private $outputRelationshipFileHandle;
     
@@ -42,7 +42,7 @@ class CreateCSVImport{
         $this->didGetHeaders = false;
         $this->headers = array();
         
-        $this->users = new \AlgorithmsIO\Node\Import\AngelListUser();
+        $this->importNodes = new \AlgorithmsIO\Node\Import\AngelListUser();
         
         $this->outputNodeFileHandle = fopen($this->outputNodeFile, 'w');
         $this->outputRelationshipFileHandle = fopen($this->outputRelationshipFile, 'w');
@@ -52,13 +52,13 @@ class CreateCSVImport{
      * which can be called to get the info.
      */
     public function create(){
-        
+   
         $n=0;
         
         $handle = @fopen($this->fileLocation, "r");
         if ($handle) {
             
-            while (($buffer = fgets($handle, 4096)) !== false) {
+            while (($buffer = fgets($handle, 8096)) !== false) {
                 //echo $buffer;
                 $line = json_decode($buffer, true);
 //print_r($line);
@@ -67,14 +67,14 @@ class CreateCSVImport{
                     $this->addAdditionalHeaders();
                     $this->setHeaders($line);
                     $this->didGetHeaders=true;
-                    $this->users->setHeader($this->headers);
+                    $this->importNodes->setHeader($this->headers);
                 }
                 
 //print_r($this->headers);
-
-                $this->users->add($line);
+                //if($n>=0)
+                    $this->importNodes->add($line);
                 
-                //if($n==4)
+                //if($n==2)
                 //    break;
                 $n++;
             }
@@ -106,10 +106,14 @@ class CreateCSVImport{
      * These are headers we are adding in to augment what is not retrieved from
      * the api and adding the label so that we can upgrade the db to Neo4j 2.x 
      * and then apply these labels to the nodes.
+     * 
+     * And basically additional info or param names that we want to add in that is
+     * not in the data arrays coming in.
      */
     private function addAdditionalHeaders(){
         array_push($this->headers, 'node_db_label');
         array_push($this->headers, 'datasource_name');
+        array_push($this->headers, 'value');
     }
     /**
      * Foreach person that was taking in and produced, it will output the nodes
@@ -117,8 +121,8 @@ class CreateCSVImport{
      */
     public function output(){
         
-        $allNodes = $this->users->getAllNodes('angelList');
-        $allRels = $this->users->getAllRelationships('angelList');
+        $allNodes = $this->importNodes->getAllNodes('angelList');
+        $allRels = $this->importNodes->getAllRelationships('angelList');
      
         $this->outputNodeHeaders();
         

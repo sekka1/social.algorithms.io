@@ -42,18 +42,18 @@ namespace AlgorithmsIO\Node\Import{
          * 
          * @return int
          */
-        public function getTotalRows(){
-            return count($this->allNodes);
-        }
+        //public function getTotalRows(){
+        //    return count($this->allNodes);
+        //}
         public function add($userArray){
             $this->userArray = $userArray;
             
             if(!isset($this->userArray['person']))
                 return $this->allNodes;
 
-            $this->setPersonNodes();
-            $this->setRoleNodes();
-            $this->setSkillNodes();
+            $nodeId = $this->setPersonNodes();
+            $this->setRoleNodes($nodeId);
+            $this->setSkillNodes($nodeId);
         }
         /**
          * Returns an array holding arrays of nodes.  Each node has properties
@@ -63,28 +63,29 @@ namespace AlgorithmsIO\Node\Import{
          * 
          * @return array
          */
+        /*
         public function getNodes(){
 
             if(!isset($this->userArray['person']))
                 return $this->allNodes;
 
-            $this->setPersonNodes();
-            $this->setRoleNodes();
-            $this->setSkillNodes();
+            $nodeId = $this->setPersonNodes();
+            $this->setRoleNodes($nodeId);
+            $this->setSkillNodes($nodeId);
 
-    //print_r($this->allNodes);
-    //print_r($this->allRelationships);
             return $this->allNodes;
         }
+         * 
+         */
         /**
          * Returns an array holding arrays of relationships.  These are all based
          * on mapping of the nodes and where the startRowNumber was set to.
          * 
          * @return array
          */
-        public function getRelationships(){
-            return $this->allRelationships;
-        }
+        //public function getRelationships(){
+        //    return $this->allRelationships;
+        //}
         /**
          * This is specific to this particular API structure.
          * 
@@ -94,6 +95,8 @@ namespace AlgorithmsIO\Node\Import{
          * Additional details to this node is also set.
          * 
          * Will take the information in and place it in the $allNodes array
+         * 
+         * @return int ID of the node that was created for the Person
          */
         private function setPersonNodes(){
             $nodeArray = array();
@@ -107,71 +110,74 @@ namespace AlgorithmsIO\Node\Import{
             }
             
             // Fill out array with missing headers
-            $this->addNode($nodeArray['source_uid'], json_encode($this->fillOutDataWithAllHeaders($nodeArray)));
+            $guid = 'user_'.$nodeArray['source_uid'];
+            $nodeId = $this->addNode($guid, json_encode($this->fillOutDataWithAllHeaders($nodeArray)));
+            
+            return $nodeId;
         }
         /**
-         * This is specific to this particular API structure.
+         * Roles Nodes - aka employment
          * 
-         * Calling this will go through the array specified and loop through it for
-         * all the properties to be set in the node.
+         * Structure:
+         * PersonGUID-[:HAS_EMPLOYMENT]->Employment:employmentMain-[:HAS_EMPLOYMENT_FIRM]->EmploymentFirm:employmentFirm
+         *                                                        -[:HAS_EMPLOYMENT_ROLE]->EmploymentRole:employmentRole
          * 
-         * Additional details to this node is also set.
-         * 
-         * Will take the information in and place it in the $allNodes array
-         * 
-         * Will also populate the relationship to the main node
+         * @param int $pseronNodeId ID of the main person's node
          */
-        private function setRoleNodes(){
+        private function setRoleNodes($pseronNodeId){
+            $counter = 0; // For unique guids with un-named nodes
+            
             foreach($this->userArray['roles'] as $item){
+                
+                $temp = array();
                 foreach($item as $key=>$val){
                     $temp['node_db_label'] = 'AlRoles';
                     $temp[$key] = $val;
-                    //array_push($this->allNodes, $temp);
-                    //$this->addRelationshipToMainNode('HAS_ROLE');
-
-                    $this->addNode($temp['role_id'], json_encode($this->fillOutDataWithAllHeaders($temp)));
-                    $this->addReltionship($this->userArray['source_uid'], $temp['role_id'], 'HAS_ROLE');
                 }
+                
+                // Add Main Employment Node
+                $guid = $this->userArray['source_uid'].'_employment_'.$counter;
+                $counter++;
+                $employmentNodeId = $this->addNode($guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
+                $this->addReltionship($pseronNodeId, $employmentNodeId, 'HAS_EMPLOYMENT');
+                
+                // Add Employment Firm Node
+                $firm = array('node_db_label'=>'EmploymentFirm','value'=>$temp['startup_id'], 'startup_name'=>$temp['startup_name']);
+                $firmGUID = 'firm_'.$temp['startup_id'];
+                $firmNodeId = $this->addNode($firmGUID, json_encode($this->fillOutDataWithAllHeaders($firm)));
+                $this->addReltionship($employmentNodeId, $firmNodeId, 'HAS_EMPLOYMENT_FIRM');
+                
+                // Add Employment Role node
+                $role = array('node_db_label'=>'EmploymentRole','value'=>$temp['role_id'], 'role'=>$temp['role']);
+                $roleGUID = 'role_'.$temp['role_id'];
+                $roleNodeId = $this->addNode($roleGUID, json_encode($this->fillOutDataWithAllHeaders($role)));
+                $this->addReltionship($employmentNodeId, $roleNodeId, 'HAS_EMPLOYMENT_ROLE');
             }
         }
         /**
-         * This is specific to this particular API structure.
+         * Skills Nodes
          * 
-         * Calling this will go through the array specified and loop through it for
-         * all the properties to be set in the node.
+         * Structure:
+         * PersonGUID-[:HAS_SKILL]->Skill:skill
+         *
          * 
-         * Additional details to this node is also set.
-         * 
-         * Will take the information in and place it in the $allNodes array
-         * 
-         * Will also populate the relationship to the main node
+         * @param int $pseronNodeId ID of the main person's node
          */
-        private function setSkillNodes(){
+        private function setSkillNodes($pseronNodeId){
+            
             foreach($this->userArray['skills'] as $item){
+                
+                $temp = array();
                 foreach($item as $key=>$val){
-                    $temp['node_db_label'] = 'AlSkill';
+                    $temp['node_db_label'] = 'Skill';
                     $temp[$key] = $val;
-                    //array_push($this->allNodes, $temp);
-                    //$this->addRelationshipToMainNode('HAS_SKILL');
-                    
-                    $this->addNode($temp['id'], json_encode($this->fillOutDataWithAllHeaders($temp)));
-                    $this->addReltionship($this->userArray['source_uid'], $temp['id'], 'HAS_SKILL');
                 }
+                
+                // Add Skills Node
+                $guid = 'skill_'.$temp['id'];
+                $skillNodeId = $this->addNode($guid, json_encode($this->fillOutDataWithAllHeaders($temp)));
+                $this->addReltionship($pseronNodeId, $skillNodeId, 'HAS_SKILL');
             }        
-        }
-        /**
-         * Populates the $allRelationships array with the main node to the current
-         * node with a name
-         * 
-         * FIXME: this is not too flexible.  should find a way to do this more dynamically
-         * 
-         * @param string $relationship_name
-         */
-        private function addRelationshipToMainNode($relationship_name){
-            $temp['start'] = $this->startingRowNumber;
-            $temp['end'] = $this->startingRowNumber + count($this->allNodes)-1;
-            $temp['type'] = $relationship_name;
-            array_push($this->allRelationships, $temp);
         }
 
     }
