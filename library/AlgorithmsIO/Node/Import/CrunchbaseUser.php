@@ -124,12 +124,14 @@ namespace AlgorithmsIO\Node\Import{
                 
                 // Institute Node
                 $institue = array('node_db_label'=>'Institution','value'=>$temp['institution']);
+                $institutionGUID = 'institution_'.$temp['institution'];
                 $institutionNodeId = $this->addNode($temp['institution'], json_encode($this->fillOutDataWithAllHeaders($institue)));
                 $this->addReltionship($eduNodeId, $institutionNodeId, 'ATTENDED');
                  
                 // Degree Node
                 $degree = array('node_db_label'=>'Degree','value'=>$temp['type']);
-                $degreeNodeId = $this->addNode($temp['type'], json_encode($this->fillOutDataWithAllHeaders($degree)));
+                $degreeGUID = 'degree_'.$temp['type'];
+                $degreeNodeId = $this->addNode($degreeGUID, json_encode($this->fillOutDataWithAllHeaders($degree)));
                 $this->addReltionship($eduNodeId, $degreeNodeId, 'AWARDED');
             }
         }
@@ -163,10 +165,10 @@ namespace AlgorithmsIO\Node\Import{
                 $this->addReltionship($pseronNodeId, $employmentNodeId, 'HAS_EMPLOYMENT');
 
                 // EmploymentTitle
-                $titleGUID = $this->setBlankValue($temp['title'], 'blank_title');
-                $title = array('node_db_label'=>'EmploymentTitle','value'=>$titleGUID);
-                $titleNodeId = $this->addNode($titleGUID, json_encode($this->fillOutDataWithAllHeaders($title)));
-                $this->addReltionship($employmentNodeId, $titleNodeId, 'HAS_EMPLOYMENT_TITLE');
+                //$titleGUID = $this->setBlankValue($temp['title'], 'blank_title');
+                //$title = array('node_db_label'=>'EmploymentTitle','value'=>$titleGUID);
+                //$titleNodeId = $this->addNode($titleGUID, json_encode($this->fillOutDataWithAllHeaders($title)));
+                //$this->addReltionship($employmentNodeId, $titleNodeId, 'HAS_EMPLOYMENT_TITLE');
 
                 // EmploymentFirm
                 $firm = array('node_db_label'=>'EmploymentFirm','value'=>$temp['firm_permalink']);

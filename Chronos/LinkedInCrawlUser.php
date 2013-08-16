@@ -11,6 +11,7 @@
 
 // Set long time limit to run over days
 set_time_limit(604800);
+date_default_timezone_set('America/Los_Angeles');
 
 // Hybrid config and includes
 require_once("library/hybridauth/hybridauth/Hybrid/Auth.php");
@@ -45,8 +46,9 @@ class LinkedInCrawlUser{
         //$hybridauth_session_data = 'a:4:{s:50:"hauth_session.linkedin.token.access_token_linkedin";s:229:"a:4:{s:11:"oauth_token";s:36:"d68a8ce2-a800-489d-bc56-5e8a9a983b97";s:18:"oauth_token_secret";s:36:"3bf01d9f-44ea-4087-b2c0-cc56ad75625e";s:16:"oauth_expires_in";s:7:"5183999";s:30:"oauth_authorization_expires_in";s:7:"5183999";}";s:41:"hauth_session.linkedin.token.access_token";s:44:"s:36:"d68a8ce2-a800-489d-bc56-5e8a9a983b97";";s:48:"hauth_session.linkedin.token.access_token_secret";s:44:"s:36:"3bf01d9f-44ea-4087-b2c0-cc56ad75625e";";s:35:"hauth_session.linkedin.is_logged_in";s:4:"i:1;";}';
         $hybridauth_session_data = $paramsArray['session_key'];
         
-        // Saving data gathered to file
+        // Saving session & data gathered to file
         $outputData = new \AlgorithmsIO\Utilities\OutputData($outputFileLocation.'users.txt');
+        $outputSession = new \AlgorithmsIO\Utilities\OutputData($outputFileLocation.'session.txt');
 
         // Script Vars
         $linkedin = new \AlgorithmsIO\DataNormalization\LinkedIn();
@@ -71,6 +73,11 @@ class LinkedInCrawlUser{
 
                 // get the user profile 
                 $user_profile = $provider->getUserProfile();
+                
+                // Save session before processing long proc with user's connections
+                $sessionData['profile'] = $user_profile;
+                $sessionData['hybridauth_session_key'] = $hybridauth_session_data;
+                $outputSession->out(json_encode($sessionData));
 
                 //
                 // Get the user's infor that gave us this access session

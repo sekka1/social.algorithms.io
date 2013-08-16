@@ -27,11 +27,6 @@ SET n :Employment
 RETURN count(n);
 
 START n=node(*)
-WHERE n.node_db_label! = "EmploymentTitle"
-SET n :EmploymentTitle
-RETURN count(n);
-
-START n=node(*)
 WHERE n.node_db_label! = "EmploymentFirm"
 SET n :EmploymentFirm
 RETURN count(n);
