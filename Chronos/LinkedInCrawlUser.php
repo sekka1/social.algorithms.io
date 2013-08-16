@@ -77,7 +77,7 @@ class LinkedInCrawlUser{
                 // Save session before processing long proc with user's connections
                 $sessionData['profile'] = $user_profile;
                 $sessionData['hybridauth_session_key'] = $hybridauth_session_data;
-                $outputSession->out(json_encode($sessionData));
+                $outputSession->out(json_encode($sessionData)."\n");
 
                 //
                 // Get the user's infor that gave us this access session
