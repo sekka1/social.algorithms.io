@@ -132,6 +132,7 @@ class CreateCSVImport{
         $allRels = $this->importNodes->getAllRelationships('crunchbase');
      
         $this->outputNodeHeaders();
+        $this->outputRelHeaders();
         
         // Output Nodes
         foreach($allNodes as $anItem){
@@ -150,6 +151,13 @@ class CreateCSVImport{
     private function outputNodeHeaders(){
         fputcsv($this->outputNodeFileHandle, $this->headers, "\t");
     }
+    /**
+     * Output the relationship headers.
+     */
+    private function outputRelHeaders(){
+        $headers = array('start', 'end', 'type');
+        fputcsv($this->outputRelationshipFileHandle, $headers, "\t");
+    }  
     /**
      * Outputs the array to the file in tab delimited format.  
      * 

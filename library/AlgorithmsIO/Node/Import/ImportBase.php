@@ -37,7 +37,7 @@ namespace AlgorithmsIO\Node\Import{
          * re-continuing import and adding to an existing dataset
          */
         public function setRowNumber(){
-            $sql = "select rowNumber from ".$this->tableNameNode." where datasource_name='".$this->datasource_name."' order by rowNumber desc limit 1";
+            $sql = "select rowNumber from ".$this->tableNameNode." order by rowNumber desc limit 1";
             $result = $this->mysql->getConnection()->query($sql);
 
             if($result->num_rows==0)
@@ -90,7 +90,6 @@ namespace AlgorithmsIO\Node\Import{
                 $sql = "update ".$this->tableNameNode." set json='".$this->mysql->real_escape_string($json)."' where datasource_name='".$this->datasource_name."' AND nodeGUID='".$guid."'";
 
                 if($result = $this->mysql->getConnection()->query($sql)){
-                    $this->rowNumber++;
                     return $inTableRowNumber;
                 }else{
                     echo $sql;
@@ -168,7 +167,7 @@ namespace AlgorithmsIO\Node\Import{
          * @return bool
          */
         private function relationshipExist($start_rowNumber, $end_rowNumber, $relationship_name){            
-            $sql = "SELECT * FROM zz_relationship_db_import_table_not_akkadian_stuff WHERE datasource_name='".$this->datasource_name."' AND start=".$start_rowNumber." AND end=".$end_rowNumber." AND type='".$relationship_name."'";
+            $sql = "SELECT * FROM ".$this->tableNameRels." WHERE datasource_name='".$this->datasource_name."' AND start=".$start_rowNumber." AND end=".$end_rowNumber." AND type='".$relationship_name."'";
             $result = $this->mysql->getConnection()->query($sql);
 
             if($result = $this->mysql->getConnection()->query($sql)){
