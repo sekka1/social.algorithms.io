@@ -12,23 +12,28 @@ namespace AlgorithmsIO\Node\Import{
         private $mysqlUser;
         private $mysqlPassword;
         private $mysqlPort;
+        private $dbName;
         
         private $tableNameNode = 'zz_node_db_import_table_not_akkadian_stuff';
         private $tableNameRels = 'zz_relationship_db_import_table_not_akkadian_stuff';
 
         public function __construct() {
-            
-            $this->mysqlHost = 'localhost';
-            $this->mysqlPort = 3306;
-            $this->mysqlUser = 'root';//'akkadian';
-            $this->mysqlPassword = 'sunshine';//'akkadian1298';
+
+        }
+        public function setDBConnection($mysqlHost=null, $mysqlPort=null, $mysqlUser=null, $mysqlPassword=null, $dbname=null, $table_node, $table_relationship){
+            $this->mysqlHost = $mysqlHost;
+            $this->mysqlPort = $mysqlPort;
+            $this->mysqlUser = $mysqlUser;
+            $this->mysqlPassword = $mysqlPassword;
+            $this->dbName = $dbname;
+            $this->tableNameNode = $table_node;
+            $this->tableNameRels = $table_relationship;
             
             // Get data from MySQL
             $this->mysql = new \AlgorithmsIO\Utilities\MySQL();
             $this->mysql->setConnection($this->mysqlHost, $this->mysqlPort, $this->mysqlUser, $this->mysqlPassword);
-            $this->mysql->setDatabaseName('akkadian');
+            $this->mysql->setDatabaseName($dbname);
             $this->mysql->connect();
-            //$mySQLConnection = $this->mysql->getConnection();
             
             $this->setRowNumber();
         }

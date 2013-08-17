@@ -1,34 +1,13 @@
 <?php
+
 /**
- * Creates the Batch Importers Tab CSV file 
+ * The output file can be used to mass insert nodes into Neo4j using the 
+ * batch-import
  * 
- * Creates 2 files for the batch importer.  One node file and one relationship file
- * 
- * Input to this script is a file with each line as a person and the json output
- * of the API call.
- * 
- * The first entry in the input file should have all the fields for the header.
- * 
- * Usage:
- * -best to run on the command line
- * 
- * Testing:
- * php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php
- * 
- * Running full for all ~100k users
- * nohup php library/AlgorithmsIO/Utilities/CreateCSVImportFileCrunchbaseUser.php &
- * 
- * 
+ * Takes a datasource file and imports it into the DB.  Which then it outputs
+ * a CSV file in the Neo4j batch-import format.
+ *
  */
-ini_set('memory_limit','4024M');
-include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
-ini_set('max_execution_time', 6000);
-
-//$createCSV = new CreateCSVImport("/opt/logs/crunchbase/users_072612.txt");
-$createCSV = new CreateCSVImport("/Users/gkan/Downloads/neo4j-stuff/source_data/crunchbase_users_072612.txt");
-$createCSV->create();
-$createCSV->output();
-
 
 class CreateCSVImport{
     
@@ -38,21 +17,68 @@ class CreateCSVImport{
     
     private $importNodes;
     
-    private $outputNodeFile = '/Users/gkan/Downloads/node_crunchbase_user.csv';
-    private $outputRelationshipFile = '/Users/gkan/Downloads/relationship_crunchbase_user.csv';
+    private $outputLocation;
+    
+    private $outputNodeFile;
+    private $outputRelationshipFile;
     private $outputNodeFileHandle;
     private $outputRelationshipFileHandle;
     
-    public function __construct($file){
-        $this->fileLocation = $file;
-        
+    private $datasource_name; // Name of the datasource in the DB
+    
+    private $graphModel;
+    
+    // DB Parameters
+    private $mysql;
+    private $mysqlHost;
+    private $mysqlUser;
+    private $mysqlPassword;
+    private $mysqlPort;
+    private $dbName;
+    private $tableNameNode;
+    private $tableNameRels;
+    
+    public function __construct(){        
         $this->didGetHeaders = false;
         $this->headers = array();
+    }
+    /**
+     * Sets the name of the datasource in the DB
+     * 
+     * @param string $name
+     */
+    public function setDatasourceName($name){
+        $this->datasource_name = $name;
+    }
+    public function setOutPutLocation($location){
+        $this->outputLocation = $location;
+    }
+    public function setSourceDataFile($file){
+        $this->fileLocation = $file;
+    }
+    public function setGraphModel($model){
+        $this->graphModel = $model;
+    }
+    public function setDBConnection($mysqlHost, $mysqlPort, $mysqlUser, $mysqlPassword, $dbname, $table_node, $table_relationship){
+        $this->mysqlHost = $mysqlHost;
+        $this->mysqlPort = $mysqlPort;
+        $this->mysqlUser = $mysqlUser;
+        $this->mysqlPassword = $mysqlPassword;
+        $this->dbName = $dbname;
+        $this->tableNameNode = $table_node;
+        $this->tableNameRels = $table_relationship;
+    }
+    public function init(){
         
-        $this->importNodes = new \AlgorithmsIO\Node\Import\CrunchbaseUser();
+        // Start up the model for the import. This is graph structure specific.
+        // For example, Crunchbase User vs Angel List Users or Even the Company
+        $model = '\AlgorithmsIO\Node\Import\\'.$this->graphModel;
+        //$this->importNodes = new \AlgorithmsIO\Node\Import\CrunchbaseUser();
+        $this->importNodes = new $model();
+        $this->importNodes->setDBConnection($this->mysqlHost, $this->mysqlPort, $this->mysqlUser, $this->mysqlPassword, $this->dbName, $this->tableNameNode, $this->tableNameRels);
         
-        $this->outputNodeFileHandle = fopen($this->outputNodeFile, 'w');
-        $this->outputRelationshipFileHandle = fopen($this->outputRelationshipFile, 'w');
+        $this->outputNodeFileHandle = fopen($this->outputLocation.'_node_'.$this->graphModel.'.csv', 'w');
+        $this->outputRelationshipFileHandle = fopen($this->outputLocation.'_relationship_'.$this->graphModel.'.csv', 'w');
     }
     /**
      * Initiates creating the AngelListUser object which holds each users information
@@ -128,8 +154,8 @@ class CreateCSVImport{
      */
     public function output(){
         
-        $allNodes = $this->importNodes->getAllNodes('crunchbase');
-        $allRels = $this->importNodes->getAllRelationships('crunchbase');
+        $allNodes = $this->importNodes->getAllNodes($this->datasource_name);
+        $allRels = $this->importNodes->getAllRelationships($this->datasource_name);
      
         $this->outputNodeHeaders();
         $this->outputRelHeaders();
