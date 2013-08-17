@@ -25,7 +25,17 @@ include_once('library/AlgorithmsIO/Node/sources/CSVImportBase.php');
 include_once('library/AlgorithmsIO/Node/Import/CrunchbaseUser.php');
 ini_set('max_execution_time', 6000);
 
+
+$mysqlHost = 'localhost';
+$mysqlPort = 3306;
+$mysqlUser = 'root';
+$mysqlPassword = 'sunshine';
+$dbname = 'akkadian';
+$table_node = 'zz_node_db_import_table_not_akkadian_stuff';
+$table_relationship = 'zz_relationship_db_import_table_not_akkadian_stuff';
+
 $createCSV = new CreateCSVImport();
+$createCSV->setDBConnection($mysqlHost, $mysqlPort, $mysqlUser, $mysqlPassword, $dbname, $table_node, $table_relationship);
 $createCSV->setGraphModel('CrunchbaseUser');
 $createCSV->setSourceDataFile("/Users/gkan/Downloads/neo4j-stuff/source_data/crunchbase_users_072612.txt");
 $createCSV->setDatasourceName('crunchbase');

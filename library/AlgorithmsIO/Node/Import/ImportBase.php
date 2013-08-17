@@ -1,4 +1,26 @@
 <?php
+/**
+ * Add "nodes" and relationships into the DB
+ * 
+ * DB:
+ CREATE TABLE `zz_node_db_import_table_not_akkadian_stuff` (
+  `datasource_name` VARCHAR(256) NOT NULL,
+  `rowNumber` INT(11) NOT NULL,
+  `nodeGUID` varchar(767) NOT NULL,
+  `json` longtext NOT NULL,
+  PRIMARY KEY(rowNumber),
+  KEY(nodeGUID)
+);
+CREATE TABLE `zz_relationship_db_import_table_not_akkadian_stuff` (
+  `datasource_name` VARCHAR(256) NOT NULL,
+  `start` INT(11) NOT NULL,
+  `end` INT(11) NOT NULL,
+  `type` VARCHAR(256) NOT NULL,
+  KEY (start),
+  KEY (end)
+);
+ * 
+ */
 namespace AlgorithmsIO\Node\Import{
     
     include_once('library/AlgorithmsIO/Utilities/MySQL.php');
