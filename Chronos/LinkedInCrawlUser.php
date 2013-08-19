@@ -102,21 +102,27 @@ class LinkedInCrawlUser{
                         //if($n>3)
                         //    break;
                         
-                        // To avoid LinkedIn API Throtteling.  We are going to 
-                        // pause after 450 calls.  We are hitting the "Other's standard profiles"
-                        // 500 limit.  Setting to sleep at 450 just to be safe.  
-                        // https://developer.linkedin.com/documents/throttle-limits
-                        if($n==450)
-                            sleep(90000);
-
+                        // Get user's data
                         $response = $provider->api()->profile( 'id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
                         $aUserInfo = $linkedin->getUsersValues(json_decode($response['linkedin']));
-                        array_push($outputArray['friends'], $aUserInfo);
+                        
+                        
+                        if($this->hasThrottleLimitBeenReached(json_decode($response['linkedin']))){
+                            // Throttle has been hit
+                            // 
+                            // Sleep for a day?
+                            sleep(90000);
+                            
+                        }else{
+                            // Output current user info
+                            
+                            $chuckOutput['source_user'] = $outputArray['source_user'];
+                            $chuckOutput['friends'] = $aUserInfo;
+                            
+                            // Output this chuck of data to disk
+                            $outputData->out(json_encode($chuckOutput)."\n");
+                        }
                 }
-
-                // Output crawled data
-                $outputData->out(json_encode($outputArray)."\n");
-
         }
         catch( Exception $e ){  
                 // In case we have errors 6 or 7, then we have to use Hybrid_Provider_Adapter::logout() to 
@@ -166,6 +172,27 @@ class LinkedInCrawlUser{
      */
     public function getResults(){
         return "Success";
+    }
+    /**
+     * 
+     * To avoid LinkedIn API Throtteling.  
+     * 
+     * https://developer.linkedin.com/documents/throttle-limits
+     * 
+     * @return bool
+     */
+    private function hasThrottleLimitBeenReached($response){
+
+        $isTrue = false;
+        
+        if(isset($response->status)){
+            if($response->status == 403){
+                if($response->message == 'Throttle limit for calls to this resource is reached.'){
+                    $isTrue = true;
+                }
+            }
+        }
+        return $isTrue;
     }
 }
 
