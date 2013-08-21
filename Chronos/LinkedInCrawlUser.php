@@ -85,7 +85,6 @@ class LinkedInCrawlUser{
                 $response = $provider->api()->profile( 'id='.$user_profile->identifier.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
                 $outputArray['source_user'] = $linkedin->getUsersValues(json_decode($response['linkedin']), true);
 
-
                 // Retrieves all of this user's connections
                 $connections_list = $provider->api()->profile( '~/connections?format=json', 'get' );
                 $connections_list_object = json_decode($connections_list['linkedin']);
@@ -99,14 +98,13 @@ class LinkedInCrawlUser{
                 foreach($connections_list_object->values as $aConnection){		
 
                         $n++;
-                        //if($n>3)
+                        //if($n>30)
                         //    break;
                         
                         // Get user's data
                         $response = $provider->api()->profile( 'id='.$aConnection->id.':(id,firstName,lastName,headline,location,industry,current-share,num-connections,num-connections-capped,summary,specialties,positions,picture-url,api-standard-profile-request,public-profile-url,email-address,associations,honors,interests,publications,patents,languages,skills,certifications,educations,courses,volunteer,three-current-positions,three-past-positions,num-recommenders,recommendations-received,mfeed-rss-url,following,job-bookmarks,suggestions,date-of-birth,related-profile-views,phone-numbers,bound-account-types,im-accounts,main-address,twitter-accounts,primary-twitter-account,connections)?format=json', 'get' );
                         $aUserInfo = $linkedin->getUsersValues(json_decode($response['linkedin']));
-                        
-                        
+                                          
                         if($this->hasThrottleLimitBeenReached(json_decode($response['linkedin']))){
                             // Throttle has been hit
                             // 

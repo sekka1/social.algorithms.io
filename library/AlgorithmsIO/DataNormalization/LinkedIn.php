@@ -17,8 +17,10 @@ namespace AlgorithmsIO\DataNormalization{
 							'person',
 							//'other_handles',
 							//'data_meta_data', // Data about this data, created, update, etc
-							//'educations',
-							'employments'
+							'educations',
+							'employments',
+                                                        'employmentsPastThree',
+                                                        'employmentsCurrentThree'
 						);
                 
 		public function __construct(){}
@@ -75,33 +77,40 @@ namespace AlgorithmsIO\DataNormalization{
                         $dataArray['numConnections'] = $this->value_numConnections($aUser);
                         $dataArray['numConnectionsCapped'] = $this->value_numConnectionsCapped($aUser);
                         $dataArray['pictureUrl'] = $this->value_pictureUrl($aUser);
-                        $dataArray['specialties'] = $this->value_specialties($aUser);
-			$dataArray['summary'] = $this->value_summary($aUser);
+                        //$dataArray['specialties'] = $this->value_specialties($aUser);
+			//$dataArray['summary'] = $this->value_summary($aUser);
+                        $dataArray['emailAddress'] = $this->value_emailAddress($aUser);
+                        $dataArray['honors'] = $this->value_honors($aUser);
+                        $dataArray['publicProfileUrl'] = $this->value_publicProfileUrl($aUser);
+                        $dataArray['twitter_handle_1'] = $this->value_twitterHandle($aUser,0);
+                        $dataArray['twitter_id_1'] = $this->value_twitterID($aUser,0);
+                        $dataArray['twitter_handle_2'] = $this->value_twitterHandle($aUser,1);
+                        $dataArray['twitter_id_2'] = $this->value_twitterID($aUser,1);
                         
 			return $dataArray;
 		}
                 
 		private function value_firstName($aUser){
 			if(isset($aUser->firstName))
-				return $aUser->firstName;
+				return $this->pruneValue($aUser->firstName);
 			else
 				return null;
 		}
 		private function value_headline($aUser){
 			if(isset($aUser->headline))
-				return $aUser->headline;
+				return $this->pruneValue($aUser->headline);
 			else
 				return null;
 		}
 		private function value_lastName($aUser){
 			if(isset($aUser->lastName))
-				return $aUser->lastName;
+				return $this->pruneValue($aUser->lastName);
 			else
 				return null;
 		}
 		private function value_industry($aUser){
 			if(isset($aUser->industry))
-				return $aUser->industry;
+				return $this->pruneValue($aUser->industry);
 			else
 				return null;
 		}
@@ -110,7 +119,7 @@ namespace AlgorithmsIO\DataNormalization{
 			if(isset($aUser->location)){
 				if(isset($aUser->location->country)){
 					if(isset($aUser->location->country->code))
-						$value = $aUser->location->country->code;
+						$value = $this->pruneValue($aUser->location->country->code);
 				}
 			}
 			return $value;
@@ -119,40 +128,92 @@ namespace AlgorithmsIO\DataNormalization{
 			$value = null;
 			if(isset($aUser->location)){
 				if(isset($aUser->location->name))
-					$value = $aUser->location->name;
+					$value = $this->pruneValue($aUser->location->name);
 			}
 			return $value;
 		}
 		private function value_numConnections($aUser){
 			if(isset($aUser->numConnections))
-				return $aUser->numConnections;
+				return $this->pruneValue($aUser->numConnections);
 			else
 				return null;
 		}
 		private function value_numConnectionsCapped($aUser){
 			if(isset($aUser->numConnectionsCapped))
-				return $aUser->numConnectionsCapped;
+				return $this->pruneValue($aUser->numConnectionsCapped);
 			else
 				return null;
 		}
 		private function value_pictureUrl($aUser){
 			if(isset($aUser->pictureUrl))
-				return $aUser->pictureUrl;
+				return $this->pruneValue($aUser->pictureUrl);
 			else
 				return null;
 		}
                 private function value_specialties($aUser){
 			if(isset($aUser->specialties))
-				return $aUser->specialties;
+				return $this->pruneValue($aUser->specialties);
 			else
 				return null;
 		}
                 private function value_summary($aUser){
 			if(isset($aUser->summary))
-				return $aUser->summary;
+				return $this->pruneValue($aUser->summary);
 			else
 				return null;
 		}
+                private function value_emailAddress($aUser){
+                    if(isset($aUser->emailAddress))
+				return $this->pruneValue($aUser->emailAddress);
+			else
+				return null;
+                }
+                private function value_honors($aUser){
+                    if(isset($aUser->honors))
+				return $this->pruneValue($aUser->honors);
+			else
+				return null;
+                }
+                private function value_publicProfileUrl($aUser){
+                    if(isset($aUser->publicProfileUrl))
+				return $this->pruneValue($aUser->publicProfileUrl);
+			else
+				return null;
+                }
+                /**
+                 * There can be more than one Twitter handle
+                 * 
+                 * @param type $aUser
+                 * @param int $arrayPos
+                 * @return type
+                 */
+                private function value_twitterHandle($aUser, $arrayPos){
+                    $value=null;
+                    if(isset($aUser->twitterAccounts)){
+                        if(isset($aUser->twitterAccounts->values[$arrayPos])){
+                            if(isset($aUser->twitterAccounts->values[$arrayPos]->providerAccountName))
+                                $value = $this->pruneValue($aUser->twitterAccounts->values[$arrayPos]->providerAccountName);
+                        }
+                    }
+                    return $value;  
+                }
+                /**
+                 * There can be more than one Twitter handle
+                 * 
+                 * @param type $aUser
+                 * @param int $arrayPos
+                 * @return type
+                 */
+                private function value_twitterID($aUser, $arrayPos){
+                    $value=null;
+                    if(isset($aUser->twitterAccounts)){
+                        if(isset($aUser->twitterAccounts->values[$arrayPos])){
+                            if(isset($aUser->twitterAccounts->values[$arrayPos]->providerAccountId))
+                                $value = $this->pruneValue($aUser->twitterAccounts->values[$arrayPos]->providerAccountId);
+                        }
+                    }
+                    return $value;    
+                }
                 
                 /**
 		 * Retrieves all the education and returns an array of it
@@ -178,6 +239,55 @@ namespace AlgorithmsIO\DataNormalization{
                     }
                     return $dataArray;
                 }
+                /**
+		 * Retrieves all the past three employment and returns an array of it
+		 */
+		private function value_employmentsPastThree($aUser){
+                    $dataArray = array();
+                    if(isset($aUser->threePastPositions)){
+                        if(isset($aUser->threePastPositions->values)){
+                            foreach($aUser->threePastPositions->values as $anItem){
+                                $data['position_id'] = $this->value_position_id($anItem);
+                                $data['company_id'] = $this->value_positions_company_id($anItem);
+                                $data['industry'] = $this->value_positions_company_industry($anItem);
+                                $data['name'] = $this->value_positions_company_name($anItem);
+                                $data['size'] = $this->value_positions_company_size($anItem);
+                                $data['type'] = $this->value_positions_company_type($anItem);
+                                $data['is_current'] = $this->value_positions_company_isCurrent($anItem);
+                                $data['start_date_year'] = $this->value_positions_company_startDate_year($anItem);
+                                $data['start_date_month'] = $this->value_positions_company_startDate_month($anItem);
+                                $data['title'] = $this->value_positions_company_title($anItem);
+                                array_push($dataArray, $data);
+                            }
+                        }
+                    }
+                    return $dataArray;
+                }
+                /**
+		 * Retrieves all the current three employment and returns an array of it
+		 */
+		private function value_employmentsCurrentThree($aUser){
+                    $dataArray = array();
+                    if(isset($aUser->threeCurrentPositions)){
+                        if(isset($aUser->threeCurrentPositions->values)){
+                            foreach($aUser->threeCurrentPositions->values as $anItem){
+                                $data['position_id'] = $this->value_position_id($anItem);
+                                $data['company_id'] = $this->value_positions_company_id($anItem);
+                                $data['industry'] = $this->value_positions_company_industry($anItem);
+                                $data['name'] = $this->value_positions_company_name($anItem);
+                                $data['size'] = $this->value_positions_company_size($anItem);
+                                $data['type'] = $this->value_positions_company_type($anItem);
+                                $data['is_current'] = $this->value_positions_company_isCurrent($anItem);
+                                $data['start_date_year'] = $this->value_positions_company_startDate_year($anItem);
+                                $data['start_date_month'] = $this->value_positions_company_startDate_month($anItem);
+                                $data['title'] = $this->value_positions_company_title($anItem);
+                                array_push($dataArray, $data);
+                            }
+                        }
+                    }
+                    return $dataArray;
+                }
+                
                 
                 // change the function to take in the sub path of the value array
                 
@@ -187,7 +297,7 @@ namespace AlgorithmsIO\DataNormalization{
 			$value = null;
                        
 			if(isset($aUser->id)){
-                            $value = $aUser->id;
+                            $value = $this->pruneValue($aUser->id);
                         }
 			return $value;
 		}
@@ -196,7 +306,7 @@ namespace AlgorithmsIO\DataNormalization{
                        
 			if(isset($aUser->company)){
                             if(isset($aUser->company->id)){
-                                $value = $aUser->company->id;
+                                $value = $this->pruneValue($aUser->company->id);
                             }
                         }
 			return $value;
@@ -206,7 +316,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->company)){
                             if(isset($aUser->company->industry))
-                                $value = $aUser->company->industry;
+                                $value = $this->pruneValue($aUser->company->industry);
                             
                         }
 			return $value;
@@ -216,7 +326,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->company)){
                             if(isset($aUser->company->name))
-                                $value = $aUser->company->name;
+                                $value = $this->pruneValue($aUser->company->name);
                             
                         }
 			return $value;
@@ -226,7 +336,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->company)){
                             if(isset($aUser->company->size))
-                                $value = $aUser->company->size;
+                                $value = $this->pruneValue($aUser->company->size);
                             
                         }
 			return $value;
@@ -236,7 +346,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->company)){
                             if(isset($aUser->company->type))
-                                $value = $aUser->company->type;
+                                $value = $this->pruneValue($aUser->company->type);
                             
                         }
 			return $value;
@@ -245,7 +355,7 @@ namespace AlgorithmsIO\DataNormalization{
 			$value = null;
 			
 			if(isset($aUser->isCurrent))
-                            $value = $aUser->isCurrent;
+                            $value = $this->pruneValue($aUser->isCurrent);
 					
 			return $value;
 		}
@@ -254,7 +364,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->startDate)){
                             if(isset($aUser->startDate->year))
-                                $value = $aUser->startDate->year;
+                                $value = $this->pruneValue($aUser->startDate->year);
                             
                         }
 			return $value;
@@ -264,7 +374,7 @@ namespace AlgorithmsIO\DataNormalization{
 			
 			if(isset($aUser->startDate)){
                             if(isset($aUser->startDate->month))
-                                $value = $aUser->startDate->month;
+                                $value = $this->pruneValue($aUser->startDate->month);
                             
                         }
 			return $value;
@@ -273,10 +383,101 @@ namespace AlgorithmsIO\DataNormalization{
 			$value = null;
 			
 			if(isset($aUser->title))
-                            $value = $aUser->title;
+                            $value = $this->pruneValue($aUser->title);
 					
 			return $value;
 		}
+
                 
+                
+                
+                /**
+		 * Retrieves all the education and returns an array of it
+		 */
+		private function value_educations($aUser){
+                    $dataArray = array();
+                    if(isset($aUser->educations)){
+                        if(isset($aUser->educations->values)){
+                            foreach($aUser->educations->values as $anItem){
+                                $data['activities'] = $this->get_edu_activities($anItem);
+                                $data['degree'] = $this->get_edu_degree($anItem);         
+                                $data['endDate'] = $this->get_edu_endDate($anItem); 
+                                $data['fieldOfStudy'] = $this->get_edu_fieldOfStudy($anItem); 
+                                $data['id'] = $this->get_edu_id($anItem); 
+                                $data['notes'] = $this->get_edu_notes($anItem); 
+                                $data['schoolName'] = $this->get_edu_schoolName($anItem); 
+                                        
+                                array_push($dataArray, $data);
+                            }
+                        }
+                    }
+                    return $dataArray;
+                }
+                private function get_edu_activities($data){
+                    $value = null;
+                    if(isset($data->activities))
+                        $value = $this->pruneValue($data->activities);
+                    return $value;
+		}
+                private function get_edu_degree($data){
+                    $value = null;
+                    if(isset($data->degree))
+                        $value = $this->pruneValue($data->degree);
+                    return $value;
+		}
+                private function get_edu_endDate($data){
+                    $value = null;
+                    if(isset($data->endDate)){
+                        if(isset($data->endDate->year))
+                            $value = $this->pruneValue($data->endDate->year);
+                    }
+                    return $value;
+		}
+                private function get_edu_fieldOfStudy($data){
+                    $value = null;
+                    if(isset($data->fieldOfStudy))
+                        $value = $this->pruneValue($data->fieldOfStudy);
+                    return $value;
+		}
+                private function get_edu_id($data){
+                    $value = null;
+                    if(isset($data->id))
+                        $value = $this->pruneValue($data->id);
+                    return $value;
+		}
+                private function get_edu_notes($data){
+                    $value = null;
+                    if(isset($data->notes))
+                        $value = $this->pruneValue($data->notes);
+                    return $value;
+		}
+                private function get_edu_schoolName($data){
+                    $value = null;
+                    if(isset($data->schoolName))
+                        $value = $this->pruneValue($data->schoolName);
+                    return $value;
+		}
+                
+                
+                /**
+                 * prunes a value:
+                 * -Lower case it
+                 * -remove unwanted characters
+                 * 
+                 * @param string $value
+                 * @return string
+                 */
+                private function pruneValue($value){
+                    $value = strtolower($value);
+                    $value = trim($value);
+                    
+                    // Replace tabs, line return etc
+                    $order = array("\r\n", "\n", "\r", "\t");
+                    $replace = '';
+                    $value = str_replace($order, $replace, $value);
+                    
+                    $value = iconv("ISO-8859-1//IGNORE", "UTF-8", $value);
+                    return $value;
+                }
 	}
 }

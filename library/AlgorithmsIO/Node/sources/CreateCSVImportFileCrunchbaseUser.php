@@ -34,7 +34,7 @@ $dbname = 'akkadian';
 $table_node = 'zz_node_db_import_table_not_akkadian_stuff';
 $table_relationship = 'zz_relationship_db_import_table_not_akkadian_stuff';
 
-$createCSV = new CreateCSVImport();
+$createCSV = new AlgorithmsIO\Node\sources\CSVImportBase();
 $createCSV->setDBConnection($mysqlHost, $mysqlPort, $mysqlUser, $mysqlPassword, $dbname, $table_node, $table_relationship);
 $createCSV->setGraphModel('CrunchbaseUser');
 $createCSV->setSourceDataFile("/Users/gkan/Downloads/neo4j-stuff/source_data/crunchbase_users_072612.txt");
