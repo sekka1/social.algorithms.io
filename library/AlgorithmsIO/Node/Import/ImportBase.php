@@ -151,7 +151,7 @@ namespace AlgorithmsIO\Node\Import{
          * @param type $guid
          * @return int -either the rowNumber if it was found or -1 if not found
          */
-        private function isNodeInTable($guid){         
+        protected function isNodeInTable($guid){         
             $sql = "SELECT * FROM ".$this->tableNameNode." WHERE datasource_name='".$this->datasource_name."' AND nodeGUID='".$guid."'";
          
             if($result = $this->mysql->getConnection()->query($sql)){
